@@ -46,8 +46,7 @@ Y son los pasos que seguiremos a continuacion:
   Estos ya se encuentran en `/etc/ssl/nginx/nginx-repo.crt` y `/etc/ssl/nginx/nginx-repo.key`
 
   ```
-  sudo apt update
-  sudo apt install -y nginx-plus app-protect nginx-plus-module-njs
+  sudo apt update && sudo apt install -y nginx-plus app-protect nginx-plus-module-njs
   ```
 
   `nginx-plus` es el paquete principal de nginx\
