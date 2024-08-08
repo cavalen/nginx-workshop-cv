@@ -193,7 +193,7 @@ Y son los pasos que seguiremos a continuacion:
       }
   }
   ```
-  - Recargar la configuracion de nginx con el comando
+- Recargar la configuracion de nginx con el comando
     ```
     sudo nginx -s reload
     ```
@@ -723,3 +723,4 @@ Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com**
   `-i nginx-plus` Client ID tal como esta configurado en el OpenID Connect Provider\
   `-s 1234567890ABCDEF` Client Secret tal como esta configurado en el OpenID Connect Provider\
   `http://keycloak.example.com/realms/master/.well-known/openid-configuration` Discovery interface del IdP.
+
