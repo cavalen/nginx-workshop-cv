@@ -306,7 +306,7 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       }
   }
   ```
-  Notese como esta seguna aplicacion tiene terminacion TLS en nginx, y no tiene un bloque de `upstream` sino que directamente está enviando el request a un backend existente.
+  Notese como esta segunda aplicacion usa terminacion TLS en nginx, y no tiene un bloque de `upstream` sino que directamente está enviando el request a un backend existente.
 
   Recargar la configuracion de nginx:
   ```
@@ -315,7 +315,11 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
 
   Probar desde el browser **https://echo.example.com**
 
-  Configuremos ahora "header insertion", que esta aplicacion echo permite facilmente ver los Headers. 
+  Esta es una aplicacion sencilla que muestra informacion sobre el request en formato json.
+
+  ![echo](./echo.png)
+
+  Configuremos ahora *"header insertion"*, ya que esta aplicacion permite facilmente ver los Headers.
 
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
@@ -338,13 +342,15 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
 
           proxy_set_header X-Client-IP $remote_addr;
           proxy_set_header X-Hola "Mundo";
-          proxy_pass http://10.1.1.6:8081;
 
+          proxy_pass http://10.1.1.6:8081;
       }
   }
   ```
   `add_header` Adiciona headers a la respuesta del server\
-  `proxy_set_header` Adiciona headers al request que se envia al server
+  `proxy_set_header` Adiciona headers al request que se envia al server\
+  
+  El parametro `$server_addr` es una variable interna de nginx. El listado de variables se pueden consultar en la documentacion en **http://nginx.org/en/docs/http/ngx_http_core_module.html#variables** 
 
 ---
 
