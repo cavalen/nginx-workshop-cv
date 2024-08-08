@@ -7,10 +7,11 @@ Para conectar, en UDF ir a ubuntu-desktop -> ACCESS -> XRDP
 |---------|-----------|
 | ubuntu  | HelloUDF  |
 
-Quienes se conectan usando Windows, se recomienda colocar la calidad de colores a lo minimo para un mejor desempeño de la conexión RDP
-<p align="center">
-  <img src="docs/rdp-windows.png" />
-</p>
+Se recomienda colocar la calidad de colores a lo minimo para un mejor desempeño de la conexión RDP
+
+| Windows                              | MacOS                            |
+|--------------------------------------|----------------------------------|
+| ![RDP Windows](docs/rdp-windows.png) | ![RDP Windows](docs/rdp-mac.png) |
 
 Abrir la consola del Jumphost y clonar el repositorio del Lab
 ```sh
