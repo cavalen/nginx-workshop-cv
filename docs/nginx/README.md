@@ -267,6 +267,7 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   ```
   Recargamos la configuracion de nginx con `sudo nginx -s reload` y probamos de nuevo el app
   ![502 error](./f5app-502.png)
+
   **Que sucede?** El aplicativo no carga y responde con un error 502 pues no hay backends/upstreams saludables.
 
   En el Dashboard de NGINX podemos ver tambien los health checks realizados y el estado del servidor
