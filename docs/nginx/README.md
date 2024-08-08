@@ -23,9 +23,9 @@
   ```
   sudo wget -P /etc/apt/apt.conf.d https://cs.nginx.com/static/files/90pkgs-nginx
   ```
-- Instalar packetes:\
-  La instalcion de NGINX Plus requiere un certificado y una llave para autenticarse contra el repositorio de F5/NGINX.\
-  Esteos ya se encuentran en `/etc/ssl/nginx/nginx-repo.crt` y `/etc/ssl/nginx/nginx-repo.key`
+- Instalar paquetes:\
+  La instalación de NGINX Plus requiere un certificado y una llave para autenticarse contra el repositorio de F5/NGINX.\
+  Estos ya se encuentran en `/etc/ssl/nginx/nginx-repo.crt` y `/etc/ssl/nginx/nginx-repo.key`
 
   ```
   sudo apt update
