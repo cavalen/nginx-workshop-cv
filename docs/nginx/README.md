@@ -6,7 +6,8 @@ Se recomienda tener alguna experiencia en el CLI de Linux.
 
 En la guia se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
 
-<mark>IMPORTANTE: Los pasos de configuracion de esta guia se hacen sobre el servidor `nginx` usuario `ubuntu` con password `HelloUDF`</mark>
+<mark>IMPORTANTE: Los pasos de configuracion de esta guia se hacen sobre el servidor `nginx`\
+Usuario `ubuntu` con password `HelloUDF`</mark>
 ```
 ssh ubuntu@10.1.1.7
 ```
@@ -481,6 +482,212 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
        }
    }
    ```
-   Si revisamos la estructura del archivo podemos ver los diferentes bloques de configuracion, como las violaciones, el modo de bloqueo (Blocking / Transparent), DataGuard (Validar data sensible expuesta por el servidor), response Pages (Pagina de respuesta a Violaciones), Codigos de respuesta HTTP valiodos, etc.
+   Si revisamos la estructura del archivo podemos ver los diferentes bloques de configuracion, como las violaciones, el modo de bloqueo (Blocking / Transparent), DataGuard (Validar data sensible expuesta por el servidor), response Pages (Pagina de respuesta a Violaciones), Codigos de respuesta HTTP validos y algunos otras configuraciones que se encuentran en la [documentacion de la politica declarativa de NGINX App Protect]( https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/)\
+   **https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/**
 
-   https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/
+- Crear archivo de definicion de "Server Technologies" para la politica de seguridad en `/etc/nginx/waf/`
+   ```
+   sudo vim /etc/nginx/waf/server-technologies.json
+   ```
+   ```
+   [
+     {
+       "serverTechnologyName": "MySQL"
+     },
+     {
+       "serverTechnologyName": "Unix/Linux"
+     },
+     {
+       "serverTechnologyName": "Node.js"
+     },
+     {
+       "serverTechnologyName": "Nginx"
+     }
+   ]
+   ```
+- Crear archivo de definicion de "IP Whitelist" para la politica de seguridad en `/etc/nginx/waf/`
+   ```
+   sudo vim /etc/nginx/waf/whitelist-ips.json
+   ```
+   ```
+   [
+       {
+           "blockRequests": "never",
+           "neverLogRequests": false,
+           "ipAddress": "1.1.1.1",
+           "ipMask": "255.255.255.255"
+       },
+       {
+           "blockRequests": "always",
+           "ipAddress": "2.2.2.2",
+           "ipMask": "255.255.255.255"
+       },
+       {
+           "blockRequests": "never",
+           "neverLogRequests": false,
+           "ipAddress": "3.3.3.0",
+           "ipMask": "255.255.255.0"
+       },
+       {
+           "blockRequests": "always",
+           "neverLogRequests": false,
+           "ipAddress": "180.18.19.20",
+           "ipMask": "255.255.255.255"
+       }
+   ]
+   ```
+- Crear archivo de definicion de "HTTP Protocol Compliance" para la politica de seguridad en `/etc/nginx/waf/`
+   ```
+   sudo vim /etc/nginx/waf/http-protocols.json
+   ```
+   ```
+   [
+       {
+           "description": "Header name with no header value",
+           "enabled": true
+       },
+       {
+           "description": "Chunked request with Content-Length header",
+           "enabled": true
+       },
+       {
+           "description": "Check maximum number of parameters",
+           "enabled": true,
+           "maxParams": 5
+       },
+       {
+           "description": "Check maximum number of headers",
+           "enabled": true,
+           "maxHeaders": 20
+       },
+       {
+           "description": "Body in GET or HEAD requests",
+           "enabled": true
+       },
+       {
+           "description": "Bad multipart/form-data request parsing",
+           "enabled": true
+       },
+       {
+           "description": "Bad multipart parameters parsing",
+           "enabled": true
+       },
+       {
+           "description": "Unescaped space in URL",
+           "enabled": true
+       },
+       {
+           "description": "Host header contains IP address",
+           "enabled": false
+       }
+   ]
+   ```
+- Crear archivo de definicion de "Tecnicas de Evasion" para la politica de seguridad en `/etc/nginx/waf/`
+   ```
+   sudo vim /etc/nginx/waf/evasions.json
+   ```
+   ```
+   [
+       {
+           "description": "Bad unescape",
+           "enabled": true
+       },
+       {
+           "description": "Directory traversals",
+           "enabled": true
+       },
+       {
+           "description": "Bare byte decoding",
+           "enabled": true
+       },
+       {
+           "description": "Apache whitespace",
+           "enabled": false
+       },
+       {
+           "description": "Multiple decoding",
+           "enabled": true,
+           "maxDecodingPasses": 2
+       },
+       {
+           "description": "IIS Unicode codepoints",
+           "enabled": true
+       },
+       {
+           "description": "IIS backslashes",
+           "enabled": true
+       },
+       {
+           "description": "%u decoding",
+           "enabled": true
+       }
+   ]
+   ```
+- Como ultimo paso, activamos el WAF para la aplicacion `f5app`, editando el archivo `/etc/nginx/conf.d/f5app.example.com.conf`
+   ```
+   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
+   ```
+   Las configuraciones a nivel WAF adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicacion f5app) o en un `location` especifico. En este caso lo hacemos para toda las aplicacion.
+
+   Como requisito, el modulo de WAF debe estar cargado a NGINX, esto lo hicimos en un paso anterior agreagando la directiva `load_module` en `nginx.conf`
+
+   `app_protect_enable on;` Activa el WAF.\
+   `app_protect_security_log_enable on;` Activa logs para el WAF.\
+   `app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;` Indica el formato a usar para los logs de WAF y el destino. Puede usarse multiples veces para hacer logs a varios destinos.\
+   `app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";` Indica la politica de WAF a usar.
+
+   El archivo `f5app.example.com.conf` queda de la siguiente manera:
+   ```
+   # Custom Health Check
+   match f5app_health {
+       status 200;
+       body ~ "F5 K8S vLab";
+   }
+   
+   server {
+       listen 80 default_server;
+       server_name f5app.example.com;
+       status_zone f5app.example.com_http;
+
+       app_protect_enable on;
+       app_protect_security_log_enable on;
+       app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;
+       app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";
+
+       location / {
+           # Active Health Check
+           health_check match=f5app_health interval=10 fails=3 passes=2 uri=/;
+           proxy_pass http://f5app-backend;
+       }
+   }
+
+   upstream f5app-backend {
+       # Load Balancing Algorithm, Default = RoundRobin
+       # random;
+       keepalive 16;
+       zone backend 64k;
+       server 10.1.1.6:8080;
+       #server 10.1.1.6:8090;
+       #sticky cookie helloworld expires=1h domain=.example.com path=/;  ## SESSION PERSISTENCE
+   }
+   ```
+
+  Recargar la configuracion de nginx:
+  ```
+  sudo nginx -s reload
+  ```
+  Validar configuracion:\
+  ```
+  sudo nginx -t
+  ```
+  
+  Probar desde el browser **http://f5app.example.com**
+  Hacer algunas simulaciones de ataques a la aplicacion, <mark>y tomar nota del SupportID</mark>
+    - Adicionar al path un XSS `http://f5app.example.com/<script>`
+    - Adicionar al path un SQLi `http://f5app.example.com/?a='or 1=1#'`
+    - Navegar en la aplicacion al menu Demos > CC Numbers y validar que la configuracion de DataGuard ofusca informacion sensible.
+ 
+  En Grafana validar logs del WAF:\
+  Ir a **http://grafana.example.com:3000** y ver los Dashboards Attack Signatures, Main Dashboard y SupportIDs\
+  ![Grafana Dashboars](./grafana1.png)
+
