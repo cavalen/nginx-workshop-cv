@@ -355,23 +355,27 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
 ---
 
 ### 4. Web Application Firewall (WAF)
-NGINX App Protect (v4) utiliza archivos JSON para la definicion de la politica de seguridad y se ubican en la ruta `/etc/nginx/waf/`\
-También es posible utilizar un archivo binario llamado "pilicy bundle" que se compila por medio de un software llamado [NGINX App Protect Policy Compiler](https://docs.nginx.com/nginx-app-protect-waf/v5/admin-guide/compiler/), pero para este lab usaremos los archivos JSON\
-La política de seguridad se compone de:
-- Una archivo JSON con la configuracion del formato del log del WAF
-- Un archivo con la politica base, llamada desde `nginx.conf`
+NGINX App Protect (v4) utiliza archivos en formato JSON para la definicion de la politica de seguridad declarativa. Estos archivos pueden estar en cualquier ubucacion en el filesystem, para este Lab los colocaremos en la ruta `/etc/nginx/waf/`
+
+También es posible tener la politica como un archivo binario llamado "policy bundle" que se compila por medio de un software llamado [NGINX App Protect Policy Compiler](https://docs.nginx.com/nginx-app-protect-waf/v5/admin-guide/compiler/), pero para este Lab usaremos los archivos JSON
+
+La política de seguridad que usaremos se compone de:
+- Un archivo JSON con la configuracion del formato del log del WAF
+- Un archivo JSON con la politica base, el cual se referencia desde `nginx.conf`
 - Archivos JSON con referencias a varios bloques de configuracion (opcionales), en nuestro caso tenemos:
   - JSON para definicion de "Server Technologies" usadas en el App a proteger
   - JSON con lista blanca de direcciones IP a los cuales no se le aplica validacion por parte del WAF
   -  JSON con violaciones especificas a nivel protocolo HTTP
   -  JSON con violaciones tipo Evasion
 
-Ahora procederemos a crear todos los archivos de configuracion del WAF y activarlo para una de las aplicaciones desplegadas en el paso anterior
+Ahora procederemos a crear todos los archivos de configuracion del WAF y activarlo para una de las aplicaciones desplegadas en un paso anterior
 
 -  Crear archivo de log profile en `/etc/nginx/waf/`
    ```
    sudo vim /etc/nginx/waf/log-grafana.json
    ```
+   Este archivo usa un formato de log especifico para un dashboard de Grafana.\
+   Existe un formato `default` orientado a logs basicos via syslog y otros formatos predefinidos como `big-iq`, `arcsight`, `grpc`, `splunk` y `user-defined` que es el utilizado en este Lab.
    ```
    {
      "filter": {
