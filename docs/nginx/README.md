@@ -252,7 +252,7 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   - ir a Demos > Credit Cards
   - Correr un XSS - `http://f5app.example.com/<script>`
 
-  Validar el Dashboard de NGINX que ya podemos ver informacion sobre f5app, su estado de salud y monitores en http://dashboard.example.com:8080
+  Validar el Dashboard de NGINX que ya podemos ver informacion sobre f5app, su estado de salud y monitores en **http://dashboard.example.com:8080**
 
   Realicemos una modificacion al Heath-Check:
   ```
@@ -265,10 +265,14 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       body ~ "Workshop K8S vLab";
   }
   ```
-  Recargamos la configuracion de nginx con `sudo nginx -s reload` y probamos de nuevo el app\
+  Recargamos la configuracion de nginx con `sudo nginx -s reload` y probamos de nuevo el app
+  ![502 error](./f5app-502.png)
   **Que sucede?** El aplicativo no carga y responde con un error 502 pues no hay backends/upstreams saludables.
 
-  <mark>Reversemos los cambios en el Health Check y recargamos la configuracion de nginx</mark>
+  En el Dashboard de NGINX podemos ver tambien los health checks realizados y el estado del servidor
+  ![Dashboard f5app](./f5app-dashboard.png)
+
+  <mark>**Reversemos los cambios en el Health Check y recargamos la configuracion de nginx**</mark>
     ```
   match f5app_health {
       status 200;
