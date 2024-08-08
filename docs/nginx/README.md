@@ -202,7 +202,7 @@ Y son los pasos que seguiremos a continuacion:
   ![NGINX Dashboard](./nginx-dashboard.png)
  ---
 ### 3. Archivos de Configuracion, para los sitios a exponer
-Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d` y cada sitio deberia tener un archivo con un nombre significativo terminado en extension `.conf`, por ejemplo `misitio.com.conf`
+Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d/` y que cada sitio tenga un archivo `.conf` propio, con un nombre significativo, por ejemplo `api.misitio.com.conf`
 
 - #### Crear configuracion del primer sitio - *f5app*
   ```
