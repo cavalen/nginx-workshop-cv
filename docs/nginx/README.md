@@ -13,6 +13,10 @@ ssh ubuntu@10.1.1.7
 Para validar que estemos en el servidor correcto, podemos fijarnos en el prompt de la linea de comandos `ubuntu@nginx ~`
 ![SSH Nginx](./ssh-nginx.png)
 
+El flujo del despliegue se puede ver de esta forma
+![Flujo Instalacion](./install-flow.png)
+Y son los pasos que seguiremos a continuacion:
+
 - Pre-requisitos del sistema operativo:
   ```
   sudo apt-get install -y apt-transport-https lsb-release ca-certificates wget gnupg2 ubuntu-keyring
