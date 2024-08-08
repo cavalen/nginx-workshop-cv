@@ -325,7 +325,151 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   `add_header` Adiciona headers a la respuesta del server\
   `proxy_set_header` Adiciona headers al request que se envia al server
 
----
+--- 
 
 ### 4. Web Application Firewall (WAF)
-Hola :)
+NGINX App Protect (v4) utiliza archivos JSON para la definicion de la politica de seguridad y se ubican en la ruta `/etc/nginx/waf/`\
+También es posible utilizar un archivo binario llamado "pilicy bundle" que se compila por medio de un software llamado [NGINX App Protect Policy Compiler](https://docs.nginx.com/nginx-app-protect-waf/v5/admin-guide/compiler/), pero para este lab usaremos los archivos JSON\
+La política de seguridad se compone de:
+- Una archivo JSON con la configuracion del formato del log del WAF 
+- Un archivo con la politica base, llamada desde `nginx.conf` 
+- Archivos JSON con referencias a varios bloques de configuracion (opcionales), en nuestro caso tenemos:
+  - JSON para definicion de "Server Technologies" usadas en el App a proteger
+  - JSON con lista blanca de direcciones IP a los cuales no se le aplica validacion por parte del WAF
+  -  JSON con violaciones especificas a nivel protocolo HTTP
+  -  JSON con violaciones tipo Evasion
+
+Ahora procederemos a crear todos los archivos de configuracion del WAF y activarlo para una de las aplicaciones desplegadas en el paso anterior
+
+-  Crear archivo de log profile en `/etc/nginx/waf/`
+   ```
+   sudo vim /etc/nginx/waf/log-grafana.json
+   ```
+   ```
+   {
+     "filter": {
+       "request_type": "illegal"
+     },
+     "content": {
+       "format": "user-defined",
+       "format_string": "{\"campaign_names\":\"%threat_campaign_names%\",\"bot_signature_name\":\"%bot_signature_name%\",\"bot_category\":\"%bot_category%\",\"bot_anomalies\":\"%bot_anomalies%\",\"enforced_bot_anomalies\":\"%enforced_bot_anomalies%\",\"client_class\":\"%client_class%\",\"client_application\":\"%client_application%\",\"json_log\":%json_log%}",
+       "max_request_size": "500",
+       "max_message_size": "30k",
+       "escaping_characters": [
+         {
+           "from": "%22%22",
+           "to": "%22"
+         }
+       ]
+     }
+   }
+   ```
+- Crear archivo de la politica de seguridad base en `/etc/nginx/waf/`
+   ```
+   sudo vim /etc/nginx/waf/NginxCustomPolicy.json
+   ```
+   ```
+   {
+       "policy": {
+           "name": "NGINX_Base_with_modifications",
+           "template": { "name": "POLICY_TEMPLATE_NGINX_BASE" },
+           "applicationLanguage": "utf-8",
+           "enforcementMode": "blocking",
+           "blocking-settings": {
+              "violations": [
+                  {
+                      "name": "VIOL_RATING_THREAT",
+                      "alarm": true,
+                      "block": true
+                  },
+                  {
+                      "name": "VIOL_RATING_NEED_EXAMINATION",
+                      "alarm": false,
+                      "block": false
+                  },
+                  {
+                      "name": "VIOL_THREAT_CAMPAIGN",
+                      "alarm": true,
+                      "block": true
+                  },
+                  {
+                      "name": "VIOL_FILETYPE",
+                      "alarm": true,
+                      "block": true
+                  },
+                  {
+                       "name": "VIOL_EVASION",
+                       "alarm": true,
+                       "block": true
+                   },
+                   {
+                       "name": "VIOL_METHOD",
+                       "alarm": true,
+                       "block": true
+                   },
+                   {
+                       "name": "VIOL_HTTP_PROTOCOL",
+                       "alarm": false,
+                       "block": false
+                   },
+                   {
+                       "name": "VIOL_DATA_GUARD",
+                       "alarm": false,
+                       "block": false
+                   },
+                   {
+                       "name": "VIOL_HTTP_RESPONSE_STATUS",
+                       "alarm": true,
+                       "block": true
+                   },
+                   {
+                       "name": "VIOL_BLACKLISTED_IP",
+                       "alarm": true,
+                       "block": true
+                   }
+              ],
+              "httpProtocolReference": {
+                   "link": "file:///etc/nginx/waf/http-protocols.json"
+              },
+              "evasionReference": {
+                  "link": "file:///etc/nginx/waf/evasions.json"
+              }
+           },
+           "general": {
+               "allowedResponseCodes": [
+                   400,
+                   401,
+                   403,
+                   404,
+                   502
+               ],
+               "trustXff": true
+           },
+           "header-settings": {
+               "maximumHttpHeaderLength": 4096
+           },
+           "serverTechnologyReference": {
+               "link": "file:///etc/nginx/waf/server-technologies.json"
+           },
+           "responsePageReference": {
+               "link": "https://raw.githubusercontent.com/cavalen/acme/master/response-pages-v2.json"
+           },
+           "whitelistIpReference": {
+               "link": "file:///etc/nginx/waf/whitelist-ips.json"
+           },
+           "data-guard": {
+               "enabled": true,
+               "maskData": true,
+               "creditCardNumbers": true,
+               "usSocialSecurityNumbers": true,
+               "enforcementMode": "ignore-urls-in-list",
+               "enforcementUrls": [],
+               "lastCcnDigitsToExpose": 4,
+               "lastSsnDigitsToExpose": 4
+           }
+       }
+   }
+   ```
+   Si revisamos la estructura del archivo podemos ver los diferentes bloques de configuracion, como el modo de bloqueo
+
+   https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/ 
