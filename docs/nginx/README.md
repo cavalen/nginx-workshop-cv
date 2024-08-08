@@ -62,7 +62,6 @@ En la guia se utilizará `vim` para crear y modificar los archivos de configurac
   Adicionalmente para configurar 2 variables que se recomienda modificar a la hora de usar NGINX JavaScript y la integracion con OIDC\
   `variables_hash_max_size 2048;`\
   `variables_hash_bucket_size 128;`\
-  \
   ```
   sudo vim /etc/nginx/nginx.conf
   ```
