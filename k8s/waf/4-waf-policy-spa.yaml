@@ -1,0 +1,13 @@
+apiVersion: k8s.nginx.org/v1
+kind: Policy
+metadata:
+  name: waf-policy-spa
+spec:
+  waf:
+    enable: true
+    apPolicy: "brewz/brewz-spa-security-policy"
+    securityLog:
+      enable: true
+      apLogConf: "brewz/logconf-grafana"
+      #logDest: "syslog:server=logstash.monitoring.svc.cluster.local:5044"
+      logDest: "syslog:server=grafana.example.com:8515"

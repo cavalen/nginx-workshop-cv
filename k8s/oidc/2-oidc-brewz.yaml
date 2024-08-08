@@ -1,0 +1,13 @@
+apiVersion: k8s.nginx.org/v1
+kind: Policy
+metadata:
+  name: oidc-policy-brewz
+spec:
+  oidc:
+    clientID: nginx-plus-brewz
+    clientSecret: oidc-secret
+    authEndpoint: https://keycloak.example.com/realms/master/protocol/openid-connect/auth
+    tokenEndpoint: https://keycloak.example.com/realms/master/protocol/openid-connect/token
+    jwksURI: https://keycloak.example.com/realms/master/protocol/openid-connect/certs
+    scope: openid+profile+email
+    accessTokenEnable: true

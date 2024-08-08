@@ -1,0 +1,76 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: brewz
+  namespace: brewz
+  annotations:
+    version : "4. WAF"
+spec:
+  host: brewz.example.com
+  tls:
+    secret: brewz-secret
+  http-snippets: |
+    match brewzhealthcheck {
+      status 200;
+      body ~ "Brewz";
+    }
+  upstreams:
+    - name: spa
+      service: spa
+      port: 8080
+      lb-method: round_robin
+    - name: api
+      service: api
+      port: 8000
+    - name: inventory
+      service: inventory
+      port: 8002
+    - name: recommendations
+      service: recommendations
+      port: 8001
+    - name: spa-dark
+      service: spa-dark
+      port: 8080
+  routes:
+    - path: /
+      policies:
+        - name: waf-policy-spa      
+      location-snippets: |
+        health_check match=brewzhealthcheck interval=5s uri=/;
+      errorPages:
+      - codes: [502, 503]
+        return:
+          code: 218
+          body: "<center><h1>Tenemos inconvenientes tecnicos y estamos trabajando para solucionarlo ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
+      action:
+        pass: spa
+    - path: /api
+      policies:
+        - name: waf-policy-spa
+      action:
+        pass: api
+    - path: /api/inventory
+      action:
+        proxy:
+          upstream: inventory
+          rewritePath: /api/inventory
+    - path: /images
+      action:
+        proxy:
+          upstream: api
+          rewritePath: /images
+    - path: /api/recommendations
+      policies:
+        - name: jwt-policy-brewz
+      action:
+        proxy:
+          upstream: recommendations
+          rewritePath: /api/recommendations
+    - path: /admin
+      policies:
+        - name: oidc-policy-brewz
+      action:
+        return:
+          code: 200
+          type: text/html
+          body: "<center><h1><br>Para estar aca requieres autenticarte con Keycloak !!</h1></center>"

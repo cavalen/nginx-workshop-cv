@@ -1,0 +1,50 @@
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: brewz
+  namespace: brewz
+  annotations:
+    version : "1. Basic Virtual Server"
+spec:
+  host: brewz.example.com
+  tls:
+    secret: brewz-secret
+  upstreams:
+    - name: spa
+      service: spa
+      port: 8080
+      lb-method: round_robin
+    - name: api
+      service: api
+      port: 8000
+    - name: inventory
+      service: inventory
+      port: 8002
+    - name: recommendations
+      service: recommendations
+      port: 8001
+    - name: spa-dark
+      service: spa-dark
+      port: 8080
+  routes:
+    - path: /
+      action:
+        pass: spa
+    - path: /api
+      action:
+        pass: api
+    - path: /api/inventory
+      action:
+        proxy:
+          upstream: inventory
+          rewritePath: /api/inventory
+    - path: /images
+      action:
+        proxy:
+          upstream: api
+          rewritePath: /images
+    - path: /api/recommendations
+      action:
+        proxy:
+          upstream: recommendations
+          rewritePath: /api/recommendations
