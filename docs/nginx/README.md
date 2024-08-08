@@ -691,3 +691,31 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
   Ir a **http://grafana.example.com:3000** y ver los Dashboards Attack Signatures, Main Dashboard y SupportIDs\
   ![Grafana Dashboars](./grafana1.png)
 
+
+### 5. Auth con OpenID Connect (OIDC)
+NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicacion o el backend.\
+Esta integracion es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.\
+- La configuracion a grandes razgos consta de 5 pasos:
+   1. Descargar el software necesario para la integracion de OIDC desde GitHub
+   2. Ejecutar un script de configuracion via linea de comandos
+   3. Validar la configuracion generada por el script (Datos y rutas del Identity Provider)
+   4. Copiar la configuracion generada por el script a la misma ruta donde se encuentra el archivo de configuracion de la aplicacion a la que queremos integrar autenticacion (generalmente `/etc/nginx/conf.d`)
+   5. Editar la configuracion del aplicativo (`/etc/nginx/conf.d/<nombre-app>.conf`) y adicionar las directivas generadas por el script.
+
+- Descargar el software desde GitHub. Hay un branch recomendado para cada version de NGINX Plus, por ejemplo para NGINX Plus R31 el comando git debe especificar el branch adecuado (ej, `git clone -b R31 <REPO>`)
+  ```
+  git clone https://github.com/nginxinc/nginx-openid-connect
+  ```
+  ```
+  cd nginx-openid-connect
+  ```
+  ```
+  ./configure.sh -x -h oidc.example.com -k request -i nginx-plus -s 1234567890ABCDEF http://keycloak.example.com/realms/master/.well-known/openid-configuration
+  ```
+  `-h` indica el FQDN del IdP\
+  `-x` Insecure, no valida el certificado HTTPS (OK para entornos de prueba)\
+  `-i nginx-plus` Client ID tal como esta configurado en el OpenID Connect Provider\
+  `-s 1234567890ABCDEF` Client Secret tal como esta configurado en el OpenID Connect Provider\
+  `http://keycloak.example.com/realms/master/.well-known/openid-configuration` Discovery interface del IdP.
+
+  
