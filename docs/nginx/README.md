@@ -244,8 +244,9 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   sudo nginx -s reload
   ```
 
-  Probar desde el browser en **http://f5app.example.com**\
-  La App solo esta expuesta a traves del reverse-proxy, pero no esta protegida:\
+  Probar desde el browser en **http://f5app.example.com**
+
+  La App solo esta expuesta a traves del reverse-proxy, pero no esta protegida:
   - ir a Demos > Credit Cards
   - Correr un XSS - `http://f5app.example.com/<script>`
 
