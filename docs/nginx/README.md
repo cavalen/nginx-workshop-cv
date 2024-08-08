@@ -235,7 +235,7 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       keepalive 16;
       zone backend 64k;
       server 10.1.1.6:8080;
-      #server 10.1.1.6 8090;
+      #server 10.1.1.6:8090;
       #sticky cookie helloworld expires=1h domain=.example.com path=/;  ## SESSION PERSISTENCE
   }
   ```
@@ -267,7 +267,7 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   ```
   Recargamos la configuracion de nginx con `sudo nginx -s reload` y probamos de nuevo el app
   ![502 error](./f5app-502.png)
-
+  
   **Que sucede?** El aplicativo no carga y responde con un error 502 pues no hay backends/upstreams saludables.
 
   En el Dashboard de NGINX podemos ver tambien los health checks realizados y el estado del servidor
@@ -283,13 +283,13 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   Como siguiente prueba, activaremos el LoadBalancing en Nginx.
   Para esto, quitamos el comentario `#` en del segundo `server` en el bloque `upstream f5app-backend` hacia el final del archivo y recargamos la configuracion de nginx.\
 
-  Probando desde el browser en **http://f5app.example.com** podemos notar  por los colores del app, que ahora los request del cliente se envian hacia dos instancias del backend.
+  Probando desde el browser en **http://f5app.example.com** podemos notar por los colores del app, que ahora los request del cliente se envian hacia dos instancias del backend. También se puede validar en el Dashboard.
 
 - #### Crear configuracion del segundo sitio - *echo*
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
-  El archivo de configuracion `f5app.example.com.conf` debe quedar como este:
+  El archivo de configuracion `echo.example.com.conf` debe quedar como este:
   ```
   server {
       listen 443 ssl;
@@ -301,12 +301,12 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       ssl_ciphers TLS_AES_256_GCM_SHA384:HIGH:!aNULL:!MD5;
       ssl_prefer_server_ciphers on;
 
-      location / {        
+      location / {
           proxy_pass http://10.1.1.6:8081;
       }
   }
   ```
-  Notese como esta seguna aplicacion tiene terminacion TLS en nginx, y no tiene un bloque de `upstream` sino que directamente está enviando el request a un backend existente. 
+  Notese como esta seguna aplicacion tiene terminacion TLS en nginx, y no tiene un bloque de `upstream` sino que directamente está enviando el request a un backend existente.
 
   Recargar la configuracion de nginx:
   ```
