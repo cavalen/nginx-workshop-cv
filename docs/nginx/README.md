@@ -2,9 +2,14 @@
 
 ### 1. Instalación Nginx Plus
 Nota: La instalacion y la configuracion de NGINX Plus se realizar por linea de comandos y editando archivos de configuracion de texto.\
-Se recomienda tener alguna experiencia en el CLI de Linux.\
+Se recomienda tener alguna experiencia en el CLI de Linux.
 
 En la guia se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
+
+<mark>IMPORTANTE: Los pasos de configuracion de esta guia se hacen sobre el servidor `nginx` usuario `ubuntu` con password `HelloUDF`</mark>
+```
+ssh ubuntu@10.1.1.7
+```
 
 - Pre-requisitos del sistema operativo:
   ```
