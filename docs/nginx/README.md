@@ -81,59 +81,59 @@ Y son los pasos que seguiremos a continuacion:
   ```
   user  nginx;
   worker_processes  auto;
-  
+
   error_log  /var/log/nginx/error.log notice;
   pid        /var/run/nginx.pid;
-  
+
   load_module modules/ngx_http_app_protect_module.so;
   load_module modules/ngx_http_js_module.so;
-  
+
   events {
       worker_connections  1024;
   }
-  
-  http { 
+
+  http {
       # Necesarias a la hora de configurar OIDC. Si no se incluyen, se va a presentar un Warning.
       variables_hash_max_size 2048;
       variables_hash_bucket_size 128;
-  
+
       include       /etc/nginx/mime.types;
       default_type  application/octet-stream;
-  
+
       log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
                         '$status $body_bytes_sent "$http_referer" '
                         '"$http_user_agent" "$http_x_forwarded_for"';
-  
+
       access_log  /var/log/nginx/access.log  main;
-  
+
       sendfile        on;
       #tcp_nopush     on;
-  
+
       keepalive_timeout  65;
-  
+
       #gzip  on;
-  
+
       include /etc/nginx/conf.d/*.conf;
   }
-  
+
   # TCP/UDP proxy and load balancing block
   #
   #stream {
       # Example configuration for TCP load balancing
-  
+
       #upstream stream_backend {
       #    zone tcp_servers 64k;
       #    server backend1.example.com:12345;
       #    server backend2.example.com:12345;
       #}
-  
+
       #server {
       #    listen 12345;
       #    status_zone tcp_server;
       #    proxy_pass stream_backend;
       #}
   #}
-  
+
   # NGINX Plus Usage Reporting
   #
   # By default, every 30 minutes, NGINX Plus will send usage information
@@ -144,15 +144,15 @@ Y son los pasos que seguiremos a continuacion:
   #mgmt {
       #usage_report endpoint=nginx-mgmt.local interval=30m;
       #resolver DNS_IP;
-  
+
       #uuid_file /var/lib/nginx/nginx.id;
-  
+
       #ssl_protocols TLSv1.2 TLSv1.3;
       #ssl_ciphers DEFAULT;
-  
+
       #ssl_certificate          client.pem;
       #ssl_certificate_key      client.key;
-  
+
       #ssl_trusted_certificate  trusted_ca_cert.crt;
       #ssl_verify               on;
       #ssl_verify_depth         2;
@@ -168,7 +168,7 @@ Y son los pasos que seguiremos a continuacion:
   server {
       listen 8080;
       access_log off; # reduce noise in access logs
-  
+
       location /api/ {
           api write=on;
           #allow 127.0.0.1;
@@ -176,17 +176,17 @@ Y son los pasos que seguiremos a continuacion:
           allow 0.0.0.0/0;
           deny all;
       }
-  
+
       # Conventional location of the NGINX Plus dashboard
       location = /dashboard.html {
           root /usr/share/nginx/html;
       }
-  
+
       # Redirect requests for "/" to "/dashboard.html"
       location / {
           return 301 /dashboard.html;
       }
-  
+
       # Enable Swagger UI
       location /swagger-ui {
           root   /usr/share/nginx/html;
@@ -214,20 +214,20 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       status 200;
       body ~ "F5 K8S vLab";
   }
-  
+
   server {
       listen 80 default_server;
       server_name www.example.com;
       status_zone www.example.com_http;
-  
+
       location / {
           # Active Health Check
-          health_check match=f5app_health interval=10 fails=3 passes=2 uri=/;    
-  
+          health_check match=f5app_health interval=10 fails=3 passes=2 uri=/;
+
           proxy_pass http://f5app-backend;
       }
   }
-  
+
   upstream f5app-backend {
       # Load Balancing Algorithm, Default = RoundRobin
       # random;
@@ -242,14 +242,14 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   ```
   sudo nginx -s reload
   ```
-  
+
   Probar desde el browser en **http://f5app.example.com**\
   La App solo esta expuesta a traves del reverse-proxy, pero no esta protegida:\
   - ir a Demos > Credit Cards
   - Correr un XSS - `http://f5app.example.com/<script>`
-  
+
   Validar el Dashboard de NGINX que ya podemos ver informacion sobre f5appy su estado de salud y monitores en http://dashboard.example.com:8080
-  
+
   Realicemos una modificacion al Heath-Check:
   ```
   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
@@ -286,12 +286,12 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       listen 443 ssl;
       server_name echo.example.com;
       status_zone echo.example.com_http;
-  
+
       ssl_certificate /etc/ssl/nginx/echo.example.com.crt;
       ssl_certificate_key /etc/ssl/nginx/echo.example.com.key;
       ssl_ciphers TLS_AES_256_GCM_SHA384:HIGH:!aNULL:!MD5;
       ssl_prefer_server_ciphers on;
-  
+
       location / {        
           proxy_pass http://10.1.1.6:8081;
       }
@@ -303,11 +303,11 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   ```
   sudo nginx -s reload
   ```
-  
+
   Probar desde el browser **https://echo.example.com**
 
   Configuremos ahora "header insertion", que esta aplicacion echo permite facilmente ver los Headers. 
-  
+
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
@@ -317,34 +317,34 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       listen 443 ssl;
       server_name echo.example.com;
       status_zone echo.example.com_http;
-  
-      ssl_certificate /etc/ssl/nginx/echo.example.com.crt;  
+
+      ssl_certificate /etc/ssl/nginx/echo.example.com.crt;
       ssl_certificate_key /etc/ssl/nginx/echo.example.com.key;
       ssl_ciphers TLS_AES_256_GCM_SHA384:HIGH:!aNULL:!MD5;
       ssl_prefer_server_ciphers on;
-  
-      location / {        
+
+      location / {
           add_header X-ServerIP $server_addr;
           add_header X-srv-hostname $hostname;
-  
+
           proxy_set_header X-Client-IP $remote_addr;
           proxy_set_header X-Hola "Mundo";
           proxy_pass http://10.1.1.6:8081;
-  
+
       }
   }
   ```
   `add_header` Adiciona headers a la respuesta del server\
   `proxy_set_header` Adiciona headers al request que se envia al server
 
---- 
+---
 
 ### 4. Web Application Firewall (WAF)
 NGINX App Protect (v4) utiliza archivos JSON para la definicion de la politica de seguridad y se ubican en la ruta `/etc/nginx/waf/`\
 También es posible utilizar un archivo binario llamado "pilicy bundle" que se compila por medio de un software llamado [NGINX App Protect Policy Compiler](https://docs.nginx.com/nginx-app-protect-waf/v5/admin-guide/compiler/), pero para este lab usaremos los archivos JSON\
 La política de seguridad se compone de:
-- Una archivo JSON con la configuracion del formato del log del WAF 
-- Un archivo con la politica base, llamada desde `nginx.conf` 
+- Una archivo JSON con la configuracion del formato del log del WAF
+- Un archivo con la politica base, llamada desde `nginx.conf`
 - Archivos JSON con referencias a varios bloques de configuracion (opcionales), en nuestro caso tenemos:
   - JSON para definicion de "Server Technologies" usadas en el App a proteger
   - JSON con lista blanca de direcciones IP a los cuales no se le aplica validacion por parte del WAF
@@ -643,7 +643,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
        status 200;
        body ~ "F5 K8S vLab";
    }
-   
+
    server {
        listen 80 default_server;
        server_name f5app.example.com;
@@ -680,13 +680,13 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
   ```
   sudo nginx -t
   ```
-  
+
   Probar desde el browser **http://f5app.example.com**
   Hacer algunas simulaciones de ataques a la aplicacion, <mark>y tomar nota del SupportID</mark>
     - Adicionar al path un XSS `http://f5app.example.com/<script>`
     - Adicionar al path un SQLi `http://f5app.example.com/?a='or 1=1#'`
     - Navegar en la aplicacion al menu Demos > CC Numbers y validar que la configuracion de DataGuard ofusca informacion sensible.
- 
+
   En Grafana validar logs del WAF:\
   Ir a **http://grafana.example.com:3000** y ver los Dashboards Attack Signatures, Main Dashboard y SupportIDs\
   ![Grafana Dashboars](./grafana1.png)
