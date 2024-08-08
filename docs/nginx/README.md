@@ -25,7 +25,8 @@ Y son los pasos que seguiremos a continuacion:
 - Signing Keys:
   ```
   wget -qO - https://cs.nginx.com/static/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-
+  ```
+  ```
   wget -qO - https://cs.nginx.com/static/keys/app-protect-security-updates.key | gpg --dearmor | sudo tee /usr/share/keyrings/app-protect-security-updates.gpg >/dev/null
 - Adicionar repositorios de Nginx:
   ```
@@ -695,6 +696,12 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
 ### 5. Auth con OpenID Connect (OIDC)
 NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicacion o el backend.\
 Esta integracion es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.\
+\
+El laboratorio cuenta con un despliegue de `Keycloak`, corriendo como un contenedor Docker en un servidor.\
+Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com** con las credenciales `admin/admin` y en este hay un client llamado `nginx-plus` y un usuario `test` con password `test`
+
+
+
 - La configuracion a grandes razgos consta de 5 pasos:
    1. Descargar el software necesario para la integracion de OIDC desde GitHub
    2. Ejecutar un script de configuracion via linea de comandos
@@ -717,5 +724,3 @@ Esta integracion es un proceso manual y se realiza por medio de un componente ad
   `-i nginx-plus` Client ID tal como esta configurado en el OpenID Connect Provider\
   `-s 1234567890ABCDEF` Client Secret tal como esta configurado en el OpenID Connect Provider\
   `http://keycloak.example.com/realms/master/.well-known/openid-configuration` Discovery interface del IdP.
-
-  
