@@ -7,9 +7,12 @@ Para conectar, en UDF ir a ubuntu-desktop -> ACCESS -> XRDP
 |---------|-----------|
 | ubuntu  | HelloUDF  |
 
-\
-Abrir la consola del Jumphost y clonar el repositorio del Lab
+Quienes se conectan usando Windows, se recomienda colocar la calidad de colores a lo minimo para un mejor desempeño de la conexión RDP
+<p align="center">
+  <img src="docs/rdp-windows.png" />
+</p>
 
+Abrir la consola del Jumphost y clonar el repositorio del Lab
 ```sh
 git clone https://github.com/cavalen/nginx-workshop-cv
 ```
