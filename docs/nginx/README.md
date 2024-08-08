@@ -187,6 +187,143 @@ En la guia se utilizará `vim` para crear y modificar los archivos de configurac
     ```
     Probar desde el browser en **http://dashboard.example.com:8080**
 
-### 2. Archivos de Configuracion, para los sitios a exponer
+---
+### 3. Archivos de Configuracion, para los sitios a exponer
+Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d` y cada sitio deberia tener un archivo con un nombre significativo terminado en extension `.conf`, por ejemplo `misitio.com.conf`
 
 - Crear configuracion del primer sitio - *f5app*
+  ```
+  sudo vim /etc/nginx/conf.d/f5app.example.com.conf
+  ```
+  El archivo de configuracion `f5app.example.com.conf` debe quedar como este:
+  ```
+  # Custom Health Check
+  match f5app_health {
+      status 200;
+      body ~ "F5 K8S vLab";
+  }
+  
+  server {
+      listen 80 default_server;
+      server_name www.example.com;
+      status_zone www.example.com_http;
+  
+      location / {
+          # Active Health Check
+          health_check match=f5app_health interval=10 fails=3 passes=2 uri=/;    
+  
+          proxy_pass http://f5app-backend;
+      }
+  }
+  
+  upstream f5app-backend {
+      # Load Balancing Algorithm, Default = RoundRobin
+      # random;
+      keepalive 16;
+      zone backend 64k;
+      server 10.1.1.6:8080;
+      #server 10.1.1.6 8090;
+      #sticky cookie helloworld expires=1h domain=.example.com path=/;  ## SESSION PERSISTENCE
+  }
+  ```
+  Recargar la configuracion de nginx:
+  ```
+  sudo nginx -s reload
+  ```
+  
+  Probar desde el browser en **http://f5app.example.com**\
+  La App solo esta expuesta a traves del reverse-proxy, pero no esta protegida:\
+  - ir a Demos > Credit Cards
+  - Correr un XSS - `http://f5app.example.com/<script>`
+  
+  Validar el Dashboard de NGINX que ya podemos ver informacion sobre f5appy su estado de salud y monitores en http://dashboard.example.com:8080
+  
+  Realicemos una modificacion al Heath-Check:
+  ```
+  sudo vim /etc/nginx/conf.d/f5app.example.com.conf
+  ```
+  Cambiamos el segmento `match f5app_health` que quede así:
+  ```
+  match f5app_health {
+      status 200;
+      body ~ "Workshop K8S vLab";
+  }
+  ```
+  Recargamos la configuracion de nginx con `sudo nginx -s reload` y probamos de nuevo el app\
+  **Que sucede?** El aplicativo no carga y responde con un error 502 pues no hay backends/upstreams saludables.
+
+  <mark>Reversemos los cambios en el Health Check y recargamos la configuracion de nginx</mark>
+    ```
+  match f5app_health {
+      status 200;
+      body ~ "F5 K8S vLab";
+  }
+  ```
+  Como siguiente prueba, activaremos el LoadBalancing en Nginx.
+  Para esto, quitamos el comentario `#` en del segundo `server` en el bloque `upstream f5app-backend` hacia el final del archivo y recargamos la configuracion de nginx.\
+
+  Probando desde el browser en **http://f5app.example.com** podemos notar  por los colores del app, que ahora los request del cliente se envian hacia dos instancias del backend.
+
+- Crear configuracion del segundo sitio - *echo*
+  ```
+  sudo vim /etc/nginx/conf.d/echo.example.com.conf
+  ```
+  El archivo de configuracion `f5app.example.com.conf` debe quedar como este:
+  ```
+  server {
+      listen 443 ssl;
+      server_name echo.example.com;
+      status_zone echo.example.com_http;
+  
+      ssl_certificate /etc/ssl/nginx/echo.example.com.crt;
+      ssl_certificate_key /etc/ssl/nginx/echo.example.com.key;
+      ssl_ciphers TLS_AES_256_GCM_SHA384:HIGH:!aNULL:!MD5;
+      ssl_prefer_server_ciphers on;
+  
+      location / {        
+          proxy_pass http://10.1.1.6:8081;
+      }
+  }
+  ```
+  Notese como esta seguna aplicacion tiene terminacion TLS en nginx, y no tiene un bloque de `upstream` sino que directamente está enviando el request a un backend existente. 
+
+  Recargar la configuracion de nginx:
+  ```
+  sudo nginx -s reload
+  ```
+  
+  Probar desde el browser **https://echo.example.com**
+
+  Configuremos ahora "header insertion", que esta aplicacion echo permite facilmente ver los Headers. 
+  
+  ```
+  sudo vim /etc/nginx/conf.d/echo.example.com.conf
+  ```
+  El archivo de configuracion echo.example.com.conf debe quedar como este:
+  ```
+  server {
+      listen 443 ssl;
+      server_name echo.example.com;
+      status_zone echo.example.com_http;
+  
+      ssl_certificate /etc/ssl/nginx/echo.example.com.crt;  
+      ssl_certificate_key /etc/ssl/nginx/echo.example.com.key;
+      ssl_ciphers TLS_AES_256_GCM_SHA384:HIGH:!aNULL:!MD5;
+      ssl_prefer_server_ciphers on;
+  
+      location / {        
+          add_header X-ServerIP $server_addr;
+          add_header X-srv-hostname $hostname;
+  
+          proxy_set_header X-Client-IP $remote_addr;
+          proxy_set_header X-Hola "Mundo";
+          proxy_pass http://10.1.1.6:8081;
+  
+      }
+  }
+  ```
+  `add_header` Adiciona headers a la respuesta del server\
+  `proxy_set_header` Adiciona headers al request que se envia al server
+  
+### 4. Web Application Firewall (WAF)
+
