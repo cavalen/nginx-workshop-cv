@@ -11,7 +11,7 @@ En la guia se utilizará `vim` para crear y modificar los archivos de configurac
 ssh ubuntu@10.1.1.7
 ```
 Para validar que estemos en el servidor correcto, podemos fijarnos en el prompt de la linea de comandos `ubuntu@nginx ~`
-![SSH Nginx](docs/ssh-nginx.png)
+![SSH Nginx](./ssh-nginx.png)
 
 - Pre-requisitos del sistema operativo:
   ```
