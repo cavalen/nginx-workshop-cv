@@ -191,7 +191,7 @@ En la guia se utilizará `vim` para crear y modificar los archivos de configurac
 ### 3. Archivos de Configuracion, para los sitios a exponer
 Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d` y cada sitio deberia tener un archivo con un nombre significativo terminado en extension `.conf`, por ejemplo `misitio.com.conf`
 
-- Crear configuracion del primer sitio - *f5app*
+- #### Crear configuracion del primer sitio - *f5app*
   ```
   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
   ```
@@ -264,7 +264,7 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
 
   Probando desde el browser en **http://f5app.example.com** podemos notar  por los colores del app, que ahora los request del cliente se envian hacia dos instancias del backend.
 
-- Crear configuracion del segundo sitio - *echo*
+- #### Crear configuracion del segundo sitio - *echo*
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
