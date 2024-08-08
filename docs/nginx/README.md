@@ -324,6 +324,8 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   ```
   `add_header` Adiciona headers a la respuesta del server\
   `proxy_set_header` Adiciona headers al request que se envia al server
-  
-### 4. Web Application Firewall (WAF)
 
+---
+
+### 4. Web Application Firewall (WAF)
+Hola :)
