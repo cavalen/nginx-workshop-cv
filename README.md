@@ -39,9 +39,9 @@ El laboratorio cuenta con:
 ### [Parte 1: Laboratorio NGINX Plus](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/k8s)
 
 ### [Parte 2: Laboratorio NGINX Ingress Controller](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/nginx)
-
----
-
+\
+\
+\
 ## *Escenario 1: Despliegue de Brewz:*
 ##### Despligue del VirtualServer BREWZ con Active Healthchecks y Backup Service, en **https://brewz.cvlab.me**
 - Crear el VirtualServer:
