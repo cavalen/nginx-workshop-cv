@@ -372,6 +372,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
 
 -  Crear archivo de log profile en `/etc/nginx/waf/`
    ```
+   sudo mkdir /etc/nginx/waf
    sudo vim /etc/nginx/waf/log-grafana.json
    ```
    Este archivo usa un formato de log especifico para un dashboard de Grafana.\
