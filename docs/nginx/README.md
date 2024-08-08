@@ -470,6 +470,6 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
        }
    }
    ```
-   Si revisamos la estructura del archivo podemos ver los diferentes bloques de configuracion, como el modo de bloqueo
+   Si revisamos la estructura del archivo podemos ver los diferentes bloques de configuracion, como las violaciones, el modo de bloqueo (Blocking / Transparent), DataGuard (Validar data sensible expuesta por el servidor), response Pages (Pagina de respuesta a Violaciones), Codigos de respuesta HTTP valiodos, etc.
 
-   https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/ 
+   https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/
