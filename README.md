@@ -7,10 +7,10 @@ Para conectar, en UDF ir a ubuntu-desktop -> ACCESS -> XRDP
 |---------|-----------|
 | ubuntu  | HelloUDF  |
 
-## GUIAS:
-### [Parte 1: Laboratorio NGINX Plus](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/k8s)
+\
+Abrir la consola del Jumphost y clonar el repositorio del Lab
 
-### [Parte 2: Laboratorio NGINX Ingress Controller](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/nginx)
+`git clone https://github.com/cavalen/nginx-workshop-cv`
 
 ---
 
@@ -35,6 +35,13 @@ El laboratorio cuenta con:
 | oidc.example.com      | 10.1.1.5         |
 
 
+## GUIAS:
+## [Parte 1: Laboratorio NGINX Plus](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/k8s)
+
+## [Parte 2: Laboratorio NGINX Ingress Controller](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/nginx)
+
+---
+
 ## *Escenario 1: Despliegue de Brewz:*
 ##### Despligue del VirtualServer BREWZ con Active Healthchecks y Backup Service, en **https://brewz.cvlab.me**
 - Crear el VirtualServer:
@@ -42,10 +49,8 @@ El laboratorio cuenta con:
     kubectl apply -f 1-virtualserver-brewz.yaml
     kubectl get vs -n brewz
     ```
-- Explicar Manifiesto (Active Health Checks y Backup Service)
 - Abrir el dashboard de Nginx Ingress y ver los healthchecks y upstreams: **https://dashboard.cvlab.me**
 - Mostra la app en **https://brewz.cvlab.me**. Mostrar que no esta protegida (seguridad va mas adelante)
-- Mostrar el primer item, que tiene un numero de Tarjeta de Credito (no se hace nada de Security en Escenario #1)
 - Explicar como OpenShift no tiene visibilidad avanzada de los PODs de K8S, vemos como funcionan los HealthCheck activos mostrando el manifiesto `1-virtualserver-brewz.yaml`
 - Abrir la consola de Openshift: **https://console-openshift-console.apps.jp0tvppu.eastus2.aroapp.io/**
     | Username | Password             |
