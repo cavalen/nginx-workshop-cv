@@ -31,6 +31,10 @@
   sudo apt update
   sudo apt install -y nginx-plus app-protect nginx-plus-module-njs
   ```
+
+  `nginx-plus` es el paquete principal de nginx\
+  `app-protect` es el paquete del WAF\
+  `nginx-plus-module-njs` es el paquete de NGINX JavaScript (NJS), utilizado por la integracion de OIDC
 - Activar nginx a la hora de iniciar el sistema y validar la instalación:
   ```
   sudo systemctl enable nginx
