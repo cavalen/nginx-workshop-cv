@@ -10,8 +10,9 @@ Para conectar, en UDF ir a ubuntu-desktop -> ACCESS -> XRDP
 \
 Abrir la consola del Jumphost y clonar el repositorio del Lab
 
-`git clone https://github.com/cavalen/nginx-workshop-cv`
-
+```sh
+git clone https://github.com/cavalen/nginx-workshop-cv
+```
 ---
 
 ## Descripcion del Entorno:
