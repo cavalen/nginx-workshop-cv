@@ -54,7 +54,7 @@ En la guia se utilizará `vim` para crear y modificar los archivos de configurac
   sudo rm /etc/nginx/conf.d/default.conf
   ```
 
-### 2. Archivos de configuracion
+### 2. Configuracion base de nginx
 - Editar el archivo `/etc/nginx/nginx.conf` para cargar los modulos de WAF y NJS\
   `load_module modules/ngx_http_app_protect_module.so;`\
   `load_module modules/ngx_http_js_module.so;`\
@@ -80,9 +80,7 @@ En la guia se utilizará `vim` para crear y modificar los archivos de configurac
       worker_connections  1024;
   }
   
-  
-  http {
-  
+  http { 
       # Necesarias a la hora de configurar OIDC. Si no se incluyen, se va a presentar un Warning.
       variables_hash_max_size 2048;
       variables_hash_bucket_size 128;
@@ -105,7 +103,6 @@ En la guia se utilizará `vim` para crear y modificar los archivos de configurac
   
       include /etc/nginx/conf.d/*.conf;
   }
-  
   
   # TCP/UDP proxy and load balancing block
   #
@@ -189,4 +186,7 @@ En la guia se utilizará `vim` para crear y modificar los archivos de configurac
     sudo nginx -s reload
     ```
     Probar desde el browser en **http://dashboard.example.com:8080**
-- Crear configuracion del primer 
+
+### 2. Archivos de Configuracion, para los sitios a exponer
+
+- Crear configuracion del primer sitio - *f5app*
