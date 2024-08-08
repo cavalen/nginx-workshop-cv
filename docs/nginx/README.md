@@ -194,12 +194,13 @@ Y son los pasos que seguiremos a continuacion:
   }
   ```
 - Recargar la configuracion de nginx con el comando
-    ```
-    sudo nginx -s reload
-    ```
-    Probar desde el browser en **http://dashboard.example.com:8080**
+  ```
+  sudo nginx -s reload
+  ```
+  Probar desde el browser en **http://dashboard.example.com:8080**
 
----
+  ![NGINX Dashboard](./nginx-dashboard.png)
+ ---
 ### 3. Archivos de Configuracion, para los sitios a exponer
 Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d` y cada sitio deberia tener un archivo con un nombre significativo terminado en extension `.conf`, por ejemplo `misitio.com.conf`
 
