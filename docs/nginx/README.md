@@ -246,11 +246,13 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
 
   Probar desde el browser en **http://f5app.example.com**
 
+  ![f5app](./f5app.png)
+
   La App solo esta expuesta a traves del reverse-proxy, pero no esta protegida:
   - ir a Demos > Credit Cards
   - Correr un XSS - `http://f5app.example.com/<script>`
 
-  Validar el Dashboard de NGINX que ya podemos ver informacion sobre f5appy su estado de salud y monitores en http://dashboard.example.com:8080
+  Validar el Dashboard de NGINX que ya podemos ver informacion sobre f5app, su estado de salud y monitores en http://dashboard.example.com:8080
 
   Realicemos una modificacion al Heath-Check:
   ```
