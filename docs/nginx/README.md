@@ -916,3 +916,217 @@ En este caso descargaremos la ultima version (latest)
   | `$host $oidc_client` | `oidc.example.com nginx-plus;` |
   | `$oidc_client_secret` | `oidc.example.com 1234567890ABCDEF;` |
 
+  ```
+  sudo vim openid_connect_configuration.conf
+  ```
+  El archivo final queda asi:
+  ```
+  # OpenID Connect configuration
+  #
+  # Each map block allows multiple values so that multiple IdPs can be supported,
+  # the $host variable is used as the default input parameter but can be changed.
+  #
+  map $host $oidc_authz_endpoint {
+      oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/auth;
+
+      default "http://127.0.0.1:8080/auth/realms/master/protocol/openid-connect/auth";
+      #www.example.com "https://my-idp/oauth2/v1/authorize";
+  }
+
+  map $host $oidc_authz_extra_args {
+      # Extra arguments to include in the request to the IdP's authorization
+      # endpoint.
+      # Some IdPs provide extended capabilities controlled by extra arguments,
+      # for example Keycloak can select an IdP to delegate to via the
+      # "kc_idp_hint" argument.
+      # Arguments must be expressed as query string parameters and URL-encoded
+      # if required.
+      default "";
+      #www.example.com "kc_idp_hint=another_provider"
+  }
+
+  map $host $oidc_token_endpoint {
+      oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/token;
+
+      default "http://127.0.0.1:8080/auth/realms/master/protocol/openid-connect/token";
+  }
+
+  map $host $oidc_jwt_keyfile {
+      oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/certs;
+
+      default "http://127.0.0.1:8080/auth/realms/master/protocol/openid-connect/certs";
+  }
+
+  map $host $oidc_end_session_endpoint {
+      oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/certs;
+
+
+      # Specifies the end_session_endpoint URL for RP-initiated logout.
+      # If this variable is empty or not set, the default behavior is maintained,
+      # which logs out only on the NGINX side.
+      default "";
+  }
+
+  map $host $oidc_client {
+      oidc.example.com nginx-plus;
+
+      default "my-client-id";
+  }
+
+  map $host $oidc_pkce_enable {
+      default 0;
+  }
+
+  map $host $oidc_client_secret {
+      oidc.example.com 1234567890ABCDEF;
+
+
+      default "my-client-secret";
+  }
+
+  map $host $oidc_client_auth_method {
+      # Choose either "client_secret_basic" for sending client credentials in the
+      # Authorization header, or "client_secret_post" for sending them in the
+      # body of the POST request. This setting is used for confidential clients.
+      default "client_secret_post";
+  }
+
+  map $host $oidc_scopes {
+      default "openid+profile+email+offline_access";
+  }
+
+  map $host $oidc_logout_redirect {
+      # Where to send browser after requesting /logout location. This can be
+      # replaced with a custom logout page, or complete URL.
+      default "/_logout"; # Built-in, simple logout page
+  }
+
+  map $host $oidc_hmac_key {
+      oidc.example.com MPjqIKKjiKExZPKj3B7Q4xCV;
+
+      # This should be unique for every NGINX instance/cluster
+      default "ChangeMe";
+  }
+
+  map $host $zone_sync_leeway {
+      # Specifies the maximum timeout for synchronizing ID tokens between cluster
+      # nodes when you use shared memory zone content sync. This option is only
+      # recommended for scenarios where cluster nodes can randomly process
+      # requests from user agents and there may be a situation where node "A"
+      # successfully received a token, and node "B" receives the next request in
+      # less than zone_sync_interval.
+      default 0; # Time in milliseconds, e.g. (zone_sync_interval * 2 * 1000)
+  }
+
+  map $proto $oidc_cookie_flags {
+      http  "Path=/; SameSite=lax;"; # For HTTP/plaintext testing
+      https "Path=/; SameSite=lax; HttpOnly; Secure;"; # Production recommendation
+  }
+
+  map $http_x_forwarded_port $redirect_base {
+      ""      $proto://$host:$server_port;
+      default $proto://$host:$http_x_forwarded_port;
+  }
+
+  map $http_x_forwarded_proto $proto {
+      ""      $scheme;
+      default $http_x_forwarded_proto;
+  }
+
+  # ADVANCED CONFIGURATION BELOW THIS LINE
+  # Additional advanced configuration (server context) in openid_connect.server_conf
+
+  # JWK Set will be fetched from $oidc_jwks_uri and cached here - ensure writable by nginx user
+  proxy_cache_path /var/cache/nginx/jwk levels=1 keys_zone=jwk:64k max_size=1m;
+
+  # Change timeout values to at least the validity period of each token type
+  keyval_zone zone=oidc_id_tokens:1M     state=/var/lib/nginx/state/oidc_id_tokens.json     timeout=1h;
+  keyval_zone zone=oidc_access_tokens:1M state=/var/lib/nginx/state/oidc_access_tokens.json timeout=1h;
+  keyval_zone zone=refresh_tokens:1M     state=/var/lib/nginx/state/refresh_tokens.json     timeout=8h;
+  keyval_zone zone=oidc_pkce:128K timeout=90s; # Temporary storage for PKCE code verifier.
+
+  keyval $cookie_auth_token $session_jwt   zone=oidc_id_tokens;     # Exchange cookie for JWT
+  keyval $cookie_auth_token $access_token  zone=oidc_access_tokens; # Exchange cookie for access token
+  keyval $cookie_auth_token $refresh_token zone=refresh_tokens;     # Exchange cookie for refresh token
+  keyval $request_id $new_session          zone=oidc_id_tokens;     # For initial session creation
+  keyval $request_id $new_access_token     zone=oidc_access_tokens;
+  keyval $request_id $new_refresh          zone=refresh_tokens; # ''
+  keyval $pkce_id $pkce_code_verifier      zone=oidc_pkce;
+
+  auth_jwt_claim_set $jwt_audience aud; # In case aud is an array
+  js_import oidc from conf.d/openid_connect.js;
+
+  # vim: syntax=nginx
+  ```
+- Copiar archivos generados por el script a la carpeta de nginx, donde estan la configuracion de la app a la que vamos a integrar autenticacion.
+  ```
+  sudo cp openid_connect* /etc/nginx/conf.d/
+  ```
+- Editar aplicacion Web para integrar OIDC
+  
+  En uno de los primeros pasos de la configuracion de OIDC, creamos un archivo para el sitio `oidc.example.com`. Ahora debemos editarlo para incluir lo que el script de configuracion creo y lo que hemos editado de forma manual.
+
+  El script crea un archivo llamado `frontend.conf`, este archivo no es necesario, pero muestra las directivas que debe tener una aplicacion para hacer la integracion de OIDC y se usa como ejemplo de configuracion.
+
+  ```
+  sudo vim /etc/nginx/conf.d/oidc.example.com.conf
+  ```
+  ```
+  # Custom log format to include the 'sub' claim in the REMOTE_USER field
+  log_format main_jwt '$remote_addr - $jwt_claim_sub [$time_local] "$request" $status '
+                      '$body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"';
+  server {
+      include conf.d/openid_connect.server_conf; # Authorization code flow and Relying Party processing
+      error_log /var/log/nginx/error.log debug;  # Reduce severity level as required
+
+      listen 443 ssl;
+      server_name oidc.example.com;
+      status_zone oidc.example.com_http;
+
+      ssl_certificate /etc/ssl/nginx/oidc.example.com.crt;
+      ssl_certificate_key /etc/ssl/nginx/oidc.example.com.key;
+      ssl_ciphers TLS_AES_256_GCM_SHA384:HIGH:!aNULL:!MD5;
+      ssl_prefer_server_ciphers on;
+
+      location / {
+          # This site is protected with OpenID Connect
+          auth_jwt "" token=$session_jwt;
+          error_page 401 = @do_oidc_flow;
+
+          #auth_jwt_key_file $oidc_jwt_keyfile; # Enable when using filename
+          auth_jwt_key_request /_jwks_uri; # Enable when using URL
+
+          # Successfully authenticated users are proxied to the backend,
+          # with 'sub' claim passed as HTTP header
+          proxy_set_header username $jwt_claim_sub;
+
+          # Bearer token is uses to authorize NGINX to access protected backend
+          proxy_set_header Authorization "Bearer $access_token";
+          # Intercept and redirect "401 Unauthorized" proxied responses to nginx
+          # for processing with the error_page directive. Necessary if Access Token
+          # can expire before ID Token.
+          #proxy_intercept_errors on;
+
+          add_header X-ServerIP $server_addr;
+          add_header X-srv-hostname $hostname;
+
+          proxy_set_header X-Client-IP $remote_addr;
+          proxy_set_header X-Hola "Mundo";
+
+          proxy_pass http://10.1.1.6:8081;
+
+          access_log /var/log/nginx/access.log main_jwt;
+      }
+  }
+  ```
+  Recargamos la configuración de Nginx.
+  ```
+  sudo nginx -s reload
+  ```
+  Validamos en un browser en **https://oidc.example.com**\
+  La aplicacion debe ahora solicitar credenciales a Keycloak antes de permitir acceso a la App. Usar `test:test`
+  |                               |                               |
+  |-------------------------------|-------------------------------|
+  | ![Keycloak4](./keycloak4.png) | ![Keycloak5](./keycloak5.png) |
+
+### -FIN-
