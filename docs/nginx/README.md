@@ -724,7 +724,8 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
   sudo nginx -t
   ```
 
-  Probar desde el browser **http://f5app.example.com**\
+  Probar desde el browser **http://f5app.example.com**
+
   Hacer algunas simulaciones de ataques a la aplicación, <mark>y tomar nota del SupportID</mark>
     - Adicionar al path un XSS `http://f5app.example.com/<script>`
     - Adicionar al path un SQLi `http://f5app.example.com/?a='or 1=1#'`
