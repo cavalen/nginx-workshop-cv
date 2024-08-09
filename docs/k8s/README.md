@@ -57,7 +57,7 @@ cd nginx-workshop-cv/k8s
   )
   ```
 
-  ```
+  ```sh
   helm install nginx-ingress nginx-stable/nginx-ingress \
     --namespace=nginx-ingress \
     --create-namespace \
@@ -117,29 +117,29 @@ cd nginx-workshop-cv/k8s
 
 ## 3. Instalar App BREWZ
 
-```
+```sh
 kubectl create ns brewz
 ```
-```
+```sh
 k apply -f mongo-init.yaml -n brewz
 ```
-```
+```sh
 k apply -f brewz-secret.yaml -n brewz
 ```
-```
+```sh
 k apply -f brewz.yaml -n brewz
 ```
-```
+```sh
 k get svc,pod -n brewz
 ```
 ![Brewz-Install](./brewz1.png)
 
 ## 4. Publicar un Ingress (Virtual Server)
 
-```
+```sh
 k apply -f 1-virtualserver-brewz.yaml -n brewz
 ```
-```
+```yaml
 apiVersion: k8s.nginx.org/v1
 kind: VirtualServer
 metadata:
@@ -192,7 +192,7 @@ spec:
           rewritePath: /api/recommendations
 ```
 Validar:
-```
+```sh
 k get vs -n brewz
 ```
 ![Virtual-Server1](./vs1.png)
@@ -206,15 +206,15 @@ No tiene seguridad, solo se esta exponiendo la app
 Antes de hacer cambios al Ingress, simulamos un fallo en la aplicación (ej, responder con un 200 OK pero no lo que la aplicación debe responder)
 
 Para esto entramos por SSH al POD del frontend (spa) y editamos el web server:
-```
+```sh
 POD=$(kubectl get pod -n brewz -o custom-columns=:.metadata.name | grep spa | head -1); echo $POD
 ```
 Este comando nos pone en un shell en el pod `spa` de Brewz
-```
+```sh
 kubectl exec -it -n brewz $POD -- sh
 ```
 Editar Web Server:
-```
+```sh
 cat <<EOF > /tmp/index.html
 <html>
  <body>
@@ -227,7 +227,7 @@ cat <<EOF > /tmp/index.html
 EOF
 ```
 Aplicar cambios y reiniciar el Web Server del POD:
-```
+```sh
 sed -i 's/\/usr\/share\/nginx\/html;/\/tmp;/g' /etc/nginx/nginx.conf
 nginx -s reload
 exit
@@ -252,7 +252,7 @@ El segundo cambio consiste en aplicar el Health check al URL `/`, validando cada
         health_check match=brewzhealthcheck interval=5s uri=/;
 ```
 El manifiesto completo se ve asi:
-```
+```yaml
 apiVersion: k8s.nginx.org/v1
 kind: VirtualServer
 metadata:
@@ -312,7 +312,7 @@ spec:
           rewritePath: /api/recommendations
 ```
 Aplicamos el manifiesto con Health Checks:
-```
+```sh
 k apply -f 2-virtualserver-brewz.yaml -n brewz
 ```
 
@@ -339,7 +339,7 @@ Se adiciona a la configuración existente esta directiva, interceptando errores 
 ```
 
 Revisemos el manifiesto completo que hace esto:
-```
+```yaml
 apiVersion: k8s.nginx.org/v1
 kind: VirtualServer
 metadata:
@@ -404,15 +404,15 @@ spec:
           rewritePath: /api/recommendations
 ```
 Aplicamos los cambios:
-```
+```sh
 k apply -f 3-virtualserver-brewz.yaml -n brewz
 ```
 Volver a **https://brewz.example.com**
 
 Validar el mensaje de error, ahora modificado por el Ingress
 
-Por ultimo, eliminar el POD "fallido"
-```
+Por último, eliminar el POD "fallido"
+```sh
 k delete pod $POD -n brewz
 ```
 
@@ -427,14 +427,14 @@ La policy es muy similar a la desplegada en el lab de NGINX Plus, pero en este c
 
 En la carpeta del laboratorio `k8s/waf` se encuentra la política de seguridad y los objetos relacionados a esta. Aplicar los manifiestos en orden:
 
-```
+```sh
 k apply -f waf/1-waf-ap-logconf-grafana.yaml -n brewz
 k apply -f waf/2-waf-ap-custom-signatures.yaml -n brewz
 k apply -f waf/3-waf-ap-policy-spa.yaml -n brewz
 k apply -f waf/4-waf-policy-spa.yaml -n brewz
 ```
 1-waf-ap-logconf-grafana.yaml
-```
+```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APLogConf
 metadata:
@@ -453,7 +453,7 @@ spec:
 ```
 
 2-waf-ap-custom-signatures.yaml
-```
+```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APUserSig
 metadata:
@@ -475,7 +475,7 @@ spec:
 ```
 
 3-waf-ap-policy-spa.yaml
-```
+```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APPolicy
 metadata:
@@ -589,7 +589,7 @@ spec:
 ```
 
 4-waf-policy-spa.yaml
-```
+```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
 metadata:
@@ -611,7 +611,7 @@ El cambio respecto a la configuración anterior es la adición de la directiva p
 policies:
   - name: waf-policy-spa
 ```
-```
+```yaml
 apiVersion: k8s.nginx.org/v1
 kind: VirtualServer
 metadata:
@@ -681,7 +681,7 @@ spec:
 ```
 
 Aplicamos los cambios:
-```
+```sh
 k apply -f 4-virtualserver-brewz.yaml -n brewz
 ```
 
@@ -700,13 +700,13 @@ Aplicamos una política de JWT llamada `jwt-policy-brewz`
 En la carpeta del laboratorio `k8s/jwt` se encuentra la política de autenticación con tokens y un secret correspondiente al JWK (Key)
 
 Aplicamos las políticas de JWT, primero el secret, luego la "Policy"
-```
+```sh
 k apply -f jwt/1-jwt-secret.yaml -n brewz
 k apply -f jwt/2-jwt-policy.yaml -n brewz
 ```
 
 El archivo `jwt/1-jwt-secret.yaml` es básicamente un K8s-secret, donde se almacena el JSON Web Key. El JWK es una estructura en JSON que representa un set de llaves publicas, usadas para verificar el Token (JWT) creado por un authorization server.
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -717,7 +717,7 @@ data:
 ```
 
 El archivo `jwt/2-jwt-policy.yaml` es la política del Ingress, referencia el secreto anterior y lo toma del request del cliente desde un parámetro `$http_token`. En NGINX `$http_token` representa el Header `token` en el request HTTP.
-```
+```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
 metadata:
@@ -737,22 +737,22 @@ Desplegamos los cambios en el VirtualServer con la política de Auth con JWT par
 Las pruebas para la validación de Auth con JWT las hacemos desde el CLI con `curl`
 
 Endpoint que no tiene autenticación:
-```
+```sh
 curl -s -k https://brewz.example.com/api/inventory | jq
 ```
 
 Vamos al endpoint /recommendations que tiene autenticación
-```
+```sh
 curl -s -k https://brewz.example.com/api/recommendations
 ```
 
 Probamos con un Token invalido, enviado en el Header *token*: 
-```
+```sh
 curl -k -i -H "token: `cat jwt/token-bad.jwt`" https://brewz.example.com/api/recommendations
 ```
 
 Probamos con un token válido, enviado en el Header *token*:
-```
+```sh
 curl -k -s -H "token: `cat jwt/token-good.jwt`" https://brewz.example.com/api/recommendations | jq
 ```
 
@@ -762,13 +762,13 @@ Vamos a crear un nuevo endpoint `/admin` en el Ingress que responda con un conte
 
 Primero creamos la política de OIDC y el Client Secret para hacer la interacción con Keycloak. Los manifiestos se encuentran en la carpeta `k8s/oidc`
 
-```
+```sh
 k apply -f oidc/1-oidc-client-secret.yaml -n brewz
 k apply -f oidc/2-oidc-brewz.yaml -n brewz
 ```
 
 El archivo `oidc/1-oidc-client-secret.yaml` es el Client-Secret necesario para interactuar con el IdP
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -778,8 +778,8 @@ data:
   client-secret: MTIzNDU2Nzg5MEFCQ0RFRg==
 ```
 El archivo `oidc/2-oidc-brewz.yaml` es la política de OIDC, con los endpoints necesarios para intercambiar información con el IdP\
-El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` (**http://keycloak.example.com/realms/master/.well-known/openid-configuration**) nos puede ayudar a obtener esta información.  
-```
+El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` (**http://keycloak.example.com/realms/master/.well-known/openid-configuration**) nos puede ayudar a obtener esta información.
+```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
 metadata:
@@ -795,7 +795,7 @@ spec:
     accessTokenEnable: true
 ```
 Aplicamos los cambios en el VirtualServer
-```
+```sh
 k apply -f 6-virtualserver-brewz.yaml -n brewz
 ```
 Los cambios realizados al manifiesto del VirtualServer son:
@@ -813,7 +813,7 @@ Los cambios realizados al manifiesto del VirtualServer son:
 ```
 
 El manifiesto del VirtualServer completo se ve asi:
-```
+```yaml
 apiVersion: k8s.nginx.org/v1
 kind: VirtualServer
 metadata:
