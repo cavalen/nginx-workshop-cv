@@ -1,5 +1,13 @@
 # Instrucciones Lab NGINX Plus
 
+## Contenido:
+[1. Instalacion Nginx Plus](#1-instalacion-nginx-plus)\
+[2. Configuracion base de nginx](#2-configuracion-base-de-nginx)\
+[3. Archivos de Configuracion](#3-archivos-de-configuracion)\
+[4. Web Application Firewall (WAF)](#4-web-application-firewall-waf)\
+[5. Auth con OpenID Connect (OIDC)](#5-auth-con-openid-connect-oidc)
+
+
 ### 1. Instalación Nginx Plus
 Nota: La instalacion y la configuracion de NGINX Plus se realizar por linea de comandos y editando archivos de configuracion de texto.\
 Se recomienda tener alguna experiencia en el CLI de Linux.
@@ -201,7 +209,7 @@ Y son los pasos que seguiremos a continuacion:
 
   ![NGINX Dashboard](./nginx-dashboard.png)
  ---
-### 3. Archivos de Configuracion, para los sitios a exponer
+### 3. Archivos de Configuracion
 Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d/` y que cada sitio tenga un archivo `.conf` propio, con un nombre significativo, por ejemplo `api.misitio.com.conf`
 
 - #### Crear configuracion del primer sitio - *f5app*
@@ -710,7 +718,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
   En Grafana validar logs del WAF:\
   Ir a **http://grafana.example.com:3000** y ver los Dashboards Attack Signatures, Main Dashboard y SupportIDs\
   ![Grafana Dashboars](./grafana1.png)
-  
+
   ![Grafana Dashboars](./grafana2.png)
 
 ### 5. Auth con OpenID Connect (OIDC)
