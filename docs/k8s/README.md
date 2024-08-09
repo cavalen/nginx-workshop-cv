@@ -188,7 +188,8 @@ k get vs -n brewz
 ```
 ![Virtual-Server1](./vs1.png)
 
-Probar la app en el Browser en **https://brewz.example.com**\
+Probar la app en el Browser en **https://brewz.example.com**
+
 No tiene seguridad, solo se esta exponiendo la app
 
 ## 4. HealtChecks Activos
