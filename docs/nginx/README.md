@@ -769,7 +769,8 @@ Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com**
   sudo nginx -s reload
   ```
 
-- Descargar el software desde GitHub. Hay un branch recomendado para cada version de NGINX Plus, por ejemplo para NGINX Plus R31 el comando git debe especificar el branch adecuado (ej, `git clone -b R31 <REPO>`)\
+- Descargar el software desde GitHub.\
+  Hay un branch recomendado para cada version de NGINX Plus, por ejemplo para NGINX Plus R31 el comando git debe especificar el branch adecuado (ej, `git clone -b R31 <REPO>`)\
 En este caso descargaremos la ultima version (latest)
   ```
   git clone https://github.com/nginxinc/nginx-openid-connect
