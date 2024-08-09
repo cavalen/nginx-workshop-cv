@@ -739,7 +739,38 @@ Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com**
    4. Copiar la configuracion generada por el script a la misma ruta donde se encuentra el archivo de configuracion de la aplicacion a la que queremos integrar autenticacion (generalmente `/etc/nginx/conf.d`)
    5. Editar la configuracion del aplicativo (`/etc/nginx/conf.d/<nombre-app>.conf`) y adicionar las directivas generadas por el script.
 
-- Descargar el software desde GitHub. Hay un branch recomendado para cada version de NGINX Plus, por ejemplo para NGINX Plus R31 el comando git debe especificar el branch adecuado (ej, `git clone -b R31 <REPO>`)
+- Crear un nuevo "sitio" al cual habilitar autenticacion por medio de OIDC
+  ```
+  sudo vim /etc/nginx/conf.d/oidc.example.com.conf
+  ```
+  ```
+  server {
+      listen 443 ssl;
+      server_name oidc.example.com;
+      status_zone oidc.example.com_http;
+
+      ssl_certificate /etc/ssl/nginx/oidc.example.com.crt;
+      ssl_certificate_key /etc/ssl/nginx/oidc.example.com.key;
+      ssl_ciphers TLS_AES_256_GCM_SHA384:HIGH:!aNULL:!MD5;
+      ssl_prefer_server_ciphers on;
+
+      location / {
+          add_header X-ServerIP $server_addr;
+          add_header X-srv-hostname $hostname;
+
+          proxy_set_header X-Client-IP $remote_addr;
+          proxy_set_header X-Hola "Mundo";
+
+          proxy_pass http://10.1.1.6:8081;
+      }
+  }
+  ```
+  ```
+  sudo nginx -s reload
+  ```
+
+- Descargar el software desde GitHub. Hay un branch recomendado para cada version de NGINX Plus, por ejemplo para NGINX Plus R31 el comando git debe especificar el branch adecuado (ej, `git clone -b R31 <REPO>`)\
+En este caso descargaremos la ultima version (latest)
   ```
   git clone https://github.com/nginxinc/nginx-openid-connect
   ```
@@ -754,4 +785,133 @@ Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com**
   `-i nginx-plus` Client ID tal como esta configurado en el OpenID Connect Provider\
   `-s 1234567890ABCDEF` Client Secret tal como esta configurado en el OpenID Connect Provider\
   `http://keycloak.example.com/realms/master/.well-known/openid-configuration` Discovery interface del IdP.
+
+- Configurar Parametros de OIDC (1)
+
+  El script crea varios archivos, el primero a editar es `openid_connect_configuration.conf`
+
+  Solo es necesario editar la directiva `resolver` al comienzo del archivo.\
+  Como estamos usando el dominio de pruebas `example.com` este no resuelve con el DNS publico por defecto que utiliza el script (8.8.8.8) y debemos indicar la direccion IP del servicio DNS interno `127.0.0.53`.
+
+  ```
+  sudo vim openid_connect.server_conf
+  ```
+  El archivo final queda asi:
+  ```
+      # Advanced configuration START
+    set $internal_error_message "NGINX / OpenID Connect login failure\n";
+    set $pkce_id "";
+    resolver 127.0.0.53; # For DNS lookup of IdP endpoints;
+    subrequest_output_buffer_size 32k; # To fit a complete tokenset response
+    gunzip on; # Decompress IdP responses if necessary
+    # Advanced configuration END
+
+    location = /_jwks_uri {
+        internal;
+        proxy_cache jwk;                              # Cache the JWK Set received from IdP
+        proxy_cache_valid 200 12h;                    # How long to consider keys "fresh"
+        proxy_cache_use_stale error timeout updating; # Use old JWK Set if cannot reach IdP
+        proxy_ssl_server_name on;                     # For SNI to the IdP
+        proxy_method GET;                             # In case client request was non-GET
+        proxy_set_header Content-Length "";           # ''
+        proxy_pass $oidc_jwt_keyfile;                 # Expecting to find a URI here
+        proxy_ignore_headers Cache-Control Expires Set-Cookie; # Does not influence caching
+    }
+
+    location @do_oidc_flow {
+        status_zone "OIDC start";
+        js_content oidc.auth;
+        default_type text/plain; # In case we throw an error
+    }
+
+    set $redir_location "/_codexch";
+    location = /_codexch {
+        # This location is called by the IdP after successful authentication
+        status_zone "OIDC code exchange";
+        js_content oidc.codeExchange;
+        error_page 500 502 504 @oidc_error;
+    }
+
+    location = /_token {
+        # This location is called by oidcCodeExchange(). We use the proxy_ directives
+        # to construct the OpenID Connect token request, as per:
+        #  http://openid.net/specs/openid-connect-core-1_0.html#TokenRequest
+        internal;
+        proxy_ssl_server_name on; # For SNI to the IdP
+        proxy_set_header      Content-Type "application/x-www-form-urlencoded";
+        proxy_set_header      Authorization $arg_secret_basic;
+        proxy_pass            $oidc_token_endpoint;
+   }
+
+    location = /_refresh {
+        # This location is called by oidcAuth() when performing a token refresh. We
+        # use the proxy_ directives to construct the OpenID Connect token request, as per:
+        #  https://openid.net/specs/openid-connect-core-1_0.html#RefreshingAccessToken
+        internal;
+        proxy_ssl_server_name on; # For SNI to the IdP
+        proxy_set_header      Content-Type "application/x-www-form-urlencoded";
+        proxy_set_header      Authorization $arg_secret_basic;
+        proxy_pass            $oidc_token_endpoint;
+    }
+
+    location = /_id_token_validation {
+        # This location is called by oidcCodeExchange() and oidcRefreshRequest(). We use
+        # the auth_jwt_module to validate the OpenID Connect token response, as per:
+        #  https://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
+        internal;
+        auth_jwt "" token=$arg_token;
+        js_content oidc.validateIdToken;
+        error_page 500 502 504 @oidc_error;
+    }
+
+    location = /logout {
+        status_zone "OIDC logout";
+        add_header Set-Cookie "auth_token=; $oidc_cookie_flags";
+        add_header Set-Cookie "auth_nonce=; $oidc_cookie_flags";
+        add_header Set-Cookie "auth_redir=; $oidc_cookie_flags";
+        js_content oidc.logout;
+    }
+
+    location = /_logout {
+        # This location is the default value of $oidc_logout_redirect (in case it wasn't configured)
+        default_type text/plain;
+        return 200 "Logged out\n";
+    }
+
+    location @oidc_error {
+        # This location is called when oidcAuth() or oidcCodeExchange() returns an error
+        status_zone "OIDC error";
+        default_type text/plain;
+        return 500 $internal_error_message;
+    }
+
+    location /api/ {
+        api write=on;
+        allow 127.0.0.1; # Only the NGINX host may call the NGINX Plus API
+        deny all;
+        access_log off;
+    }
+
+    # vim: syntax=nginx
+    ```
+
+- Configurar Parametros de OIDC (2)
+
+  El segundo archivo a configurar es `openid_connect_configuration.conf`.
+  Debemos validar que el contenido del archivo sea el correcto respecto a los endpoints de OIDC de Keycloak.
+
+  El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` nos puede ayudar en esta validacion:
+  ![Keycloak3](./keycloak3.png)
+
+  ```
+  sudo vim openid_connect.server_conf
+  ```
+  Los valores importantes a configurar estan en las directivas `map` del archivo
+  | Parametro | Valor |
+  |-----------|-------|
+  | `$oidc_authz_endpoint` | `oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/auth;` |
+  | `$oidc_token_endpoint` | `oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/token;` |
+  | `$oidc_jwt_keyfile` | `oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/certs;` |
+  | `$host $oidc_client` | `oidc.example.com nginx-plus;` |
+  | `$oidc_client_secret` | `oidc.example.com 1234567890ABCDEF;` |
 
