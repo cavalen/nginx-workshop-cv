@@ -7,7 +7,7 @@
 [4. HealtChecks Activos](#4-healtchecks-activos)\
 [5. Manejo de Errores](#5-manejo-de-errores)\
 [6. Web Application Firewall (WAF)](#6-web-application-firewall-waf)\
-[7. Integración IdP con OIDC](#7-oidc)
+[7. Integración IdP con OIDC](#7-integración-idp-con-oidc)
 
 ## 1. Pre-requisitos
 
