@@ -778,7 +778,7 @@ data:
   client-secret: MTIzNDU2Nzg5MEFCQ0RFRg==
 ```
 El archivo `oidc/2-oidc-brewz.yaml` es la política de OIDC, con los endpoints necesarios para intercambiar información con el IdP\
-El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` (**http://keycloak.example.com/realms/master/.well-known/openid-configuration**)  nos puede ayudar en esta validación:  
+El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` (**http://keycloak.example.com/realms/master/.well-known/openid-configuration**) nos puede ayudar a obtener esta información.  
 ```
 apiVersion: k8s.nginx.org/v1
 kind: Policy
