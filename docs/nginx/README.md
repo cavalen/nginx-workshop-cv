@@ -29,33 +29,33 @@ El flujo del despliegue se puede ver de esta forma
 Y son los pasos que seguiremos a continuación:
 
 - Pre-requisitos del sistema operativo:
-  ```
+  ```sh
   sudo apt-get install -y apt-transport-https lsb-release ca-certificates wget gnupg2 ubuntu-keyring
   ```
 - Signing Keys:
-  ```
+  ```sh
   wget -qO - https://cs.nginx.com/static/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
   ```
-  ```
+  ```sh
   wget -qO - https://cs.nginx.com/static/keys/app-protect-security-updates.key | gpg --dearmor | sudo tee /usr/share/keyrings/app-protect-security-updates.gpg >/dev/null
 - Adicionar repositorios de Nginx:
-  ```
+  ```sh
   printf "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://pkgs.nginx.com/plus/ubuntu `lsb_release -cs` nginx-plus\n" | sudo tee /etc/apt/sources.list.d/nginx-plus.list
   ```
-  ```
+  ```sh
   printf "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://pkgs.nginx.com/app-protect/ubuntu `lsb_release -cs` nginx-plus\n" | sudo tee /etc/apt/sources.list.d/nginx-app-protect.list
   ```
-  ```
+  ```sh
   printf "deb [signed-by=/usr/share/keyrings/app-protect-security-updates.gpg] https://pkgs.nginx.com/app-protect-security-updates/ubuntu `lsb_release -cs` nginx-plus\n" | sudo tee -a /etc/apt/sources.list.d/nginx-app-protect.list
   ```
-  ```
+  ```sh
   sudo wget -P /etc/apt/apt.conf.d https://cs.nginx.com/static/files/90pkgs-nginx
   ```
 - Instalar paquetes:\
   La instalación de NGINX Plus requiere un certificado y una llave para autenticarse contra el repositorio de F5/NGINX.\
   Estos ya se encuentran en `/etc/ssl/nginx/nginx-repo.crt` y `/etc/ssl/nginx/nginx-repo.key`
 
-  ```
+  ```sh
   sudo apt update && sudo apt install -y nginx-plus app-protect nginx-plus-module-njs
   ```
 
@@ -63,7 +63,7 @@ Y son los pasos que seguiremos a continuación:
   `app-protect` es el paquete del WAF\
   `nginx-plus-module-njs` es el paquete de NGINX JavaScript (NJS), utilizado por la integración de OIDC
 - Activar nginx a la hora de iniciar el sistema y validar la instalación:
-  ```
+  ```sh
   sudo systemctl enable nginx
   sudo systemctl start nginx
   nginx -v
@@ -72,7 +72,7 @@ Y son los pasos que seguiremos a continuación:
   `nginx -v` muestra la version de nginx instalada\
   `curl http://0:80` retorna la pagina por defecto de nginx
 - Borrar archivo de configuración del sitio "default", ya que no lo usaremos
-  ```
+  ```sh
   sudo rm /etc/nginx/conf.d/default.conf
   ```
 
@@ -84,11 +84,11 @@ Y son los pasos que seguiremos a continuación:
   Adicionalmente para configurar 2 variables que se recomienda modificar a la hora de usar NGINX JavaScript y la integración con OIDC\
   `variables_hash_max_size 2048;`\
   `variables_hash_bucket_size 128;`
-  ```
+  ```sh
   sudo vim /etc/nginx/nginx.conf
   ```
   El archivo de configuración `nginx.conf` debe quedar como este:
-  ```
+  ```nginx
   user  nginx;
   worker_processes  auto;
 
@@ -171,10 +171,10 @@ Y son los pasos que seguiremos a continuación:
 
 - Crear configuración para la exponer el Dashboard y el API de NGINX Plus.
   Por defecto este Dashboard se expone en el puerto 8080 y se consulta via Browser
-  ```
+  ```sh
   sudo vim /etc/nginx/conf.d/api.conf
   ```
-  ```
+  ```nginx
   server {
       listen 8080;
       access_log off; # reduce noise in access logs
@@ -204,7 +204,7 @@ Y son los pasos que seguiremos a continuación:
   }
   ```
 - Recargar la configuración de nginx con el comando
-  ```
+  ```sh
   sudo nginx -s reload
   ```
   Probar desde el browser en **http://dashboard.example.com:8080**
@@ -215,11 +215,11 @@ Y son los pasos que seguiremos a continuación:
 Los archivos de configuración de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d/` y que cada sitio tenga un archivo `.conf` propio, con un nombre significativo, por ejemplo `api.misitio.com.conf`
 
 - ### Crear configuración de la primera App - *f5app.example.com*
-  ```
+  ```sh
   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
   ```
   El archivo de configuración `f5app.example.com.conf` debe quedar como este:
-  ```
+  ```nginx
   # Custom Health Check
   match f5app_health {
       status 200;
@@ -250,7 +250,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   }
   ```
   Recargar la configuración de nginx:
-  ```
+  ```sh
   sudo nginx -s reload
   ```
 
@@ -265,7 +265,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   Validar el Dashboard de NGINX que ya podemos ver información sobre f5app, su estado de salud y monitores en **http://dashboard.example.com:8080**
 
   Realicemos una modificacion al Heath-Check:
-  ```
+  ```sh
   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
   ```
   Cambiamos el segmento `match f5app_health` que quede así:
@@ -298,11 +298,11 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   Probando desde el browser en **http://f5app.example.com** podemos notar por los colores del app, que ahora los request del cliente se envían hacia dos instancias del backend. También se puede validar en el Dashboard.
 
 - ### Crear configuración de la segunda app - *echo.example.com*
-  ```
+  ```sh
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
   El archivo de configuración `echo.example.com.conf` debe quedar como este:
-  ```
+  ```nginx
   server {
       listen 443 ssl;
       server_name echo.example.com;
@@ -321,7 +321,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   Nótese como esta segunda aplicación usa terminación TLS en nginx, y no utiliza un bloque de `upstream` dentro de la configuración, sino que directamente está enviando el request a un backend existente sin hacer balanceo.
 
   Recargar la configuración de nginx:
-  ```
+  ```sh
   sudo nginx -s reload
   ```
 
@@ -346,7 +346,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   ```
 
   El archivo de configuración `echo.example.com.conf` debe quedar como este:
-  ```
+  ```nginx
   server {
       listen 443 ssl;
       server_name echo.example.com;
@@ -373,7 +373,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   
   Los parámetros `$server_addr`, `$hostname`, `$remote_addr` son variables internas de nginx. El listado de variables se pueden consultar en la documentación en **http://nginx.org/en/docs/http/ngx_http_core_module.html#variables** 
 
-  **NOTA:** Los headers adicionados en la respuesta del server (add_header) se pueden ver usando la herramienta "Developer Tools" del Browser, recargando al aplicacion `echo`.
+  **NOTA:** Los headers adicionados en la respuesta del server (add_header) se pueden ver usando la herramienta "Developer Tools" del Browser, recargando al aplicación `echo`.
 
 ---
 
@@ -394,13 +394,13 @@ La política de seguridad que usaremos se compone de:
 Ahora procederemos a crear todos los archivos de configuración del WAF y activarlo para una de las aplicaciones desplegadas en un paso anterior
 
 -  Crear archivo de log profile en `/etc/nginx/waf/`
-   ```
+   ```sh
    sudo mkdir /etc/nginx/waf
    sudo vim /etc/nginx/waf/log-grafana.json
    ```
    Este archivo usa un formato de log especifico para un dashboard de Grafana.\
    Existe un formato `default` orientado a logs básicos via syslog y otros formatos predefinidos como `big-iq`, `arcsight`, `grpc`, `splunk` y `user-defined` que es el utilizado en este Lab.
-   ```
+   ```json
    {
      "filter": {
        "request_type": "illegal"
@@ -420,10 +420,10 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    }
    ```
 - Crear archivo de la política de seguridad base en `/etc/nginx/waf/`
-   ```
+   ```sh
    sudo vim /etc/nginx/waf/NginxCustomPolicy.json
    ```
-   ```
+   ```json
    {
        "policy": {
            "name": "NGINX_Base_with_modifications",
@@ -529,10 +529,10 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    **https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/**
 
 - Crear archivo de definición de "Server Technologies" para la política de seguridad en `/etc/nginx/waf/`
-   ```
+   ```sh
    sudo vim /etc/nginx/waf/server-technologies.json
    ```
-   ```
+   ```json
    [
      {
        "serverTechnologyName": "MySQL"
@@ -549,10 +549,10 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    ]
    ```
 - Crear archivo de definición de "IP Whitelist" para la política de seguridad en `/etc/nginx/waf/`
-   ```
+   ```sh
    sudo vim /etc/nginx/waf/whitelist-ips.json
    ```
-   ```
+   ```json
    [
        {
            "blockRequests": "never",
@@ -580,10 +580,10 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    ]
    ```
 - Crear archivo de definición de "HTTP Protocol Compliance" para la política de seguridad en `/etc/nginx/waf/`
-   ```
+   ```sh
    sudo vim /etc/nginx/waf/http-protocols.json
    ```
-   ```
+   ```json
    [
        {
            "description": "Header name with no header value",
@@ -626,10 +626,10 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    ]
    ```
 - Crear archivo de definición de "Técnicas de Evasion" para la política de seguridad en `/etc/nginx/waf/`
-   ```
+   ```sh
    sudo vim /etc/nginx/waf/evasions.json
    ```
-   ```
+   ```json
    [
        {
            "description": "Bad unescape",
