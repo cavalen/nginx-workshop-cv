@@ -81,7 +81,7 @@ Y son los pasos que seguiremos a continuación:
   \
   Adicionalmente para configurar 2 variables que se recomienda modificar a la hora de usar NGINX JavaScript y la integración con OIDC\
   `variables_hash_max_size 2048;`\
-  `variables_hash_bucket_size 128;`\
+  `variables_hash_bucket_size 128;`
   ```
   sudo vim /etc/nginx/nginx.conf
   ```
@@ -275,7 +275,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   ```
   Recargamos la configuración de nginx con `sudo nginx -s reload` y probamos de nuevo el app
   ![502 error](./f5app-502.png)
-  
+
   **Que sucede?** El aplicativo no carga y responde con un error 502 pues no hay backends/upstreams saludables.
 
   En el Dashboard de NGINX podemos ver también los health checks realizados y el estado del servidor
@@ -288,12 +288,14 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
       body ~ "F5 K8S vLab";
   }
   ```
+  #### Load Balancing:
+
   Como siguiente prueba, activaremos el LoadBalancing en Nginx.
-  Para esto, quitamos el comentario `#` en del segundo `server` en el bloque `upstream f5app-backend` hacia el final del archivo y recargamos la configuración de nginx.\
+  Para esto, quitamos el comentario `#` en del segundo `server` en el bloque `upstream f5app-backend` hacia el final del archivo y recargamos la configuración de nginx.
 
   Probando desde el browser en **http://f5app.example.com** podemos notar por los colores del app, que ahora los request del cliente se envían hacia dos instancias del backend. También se puede validar en el Dashboard.
 
-- #### Crear configuración del segundo sitio - *echo*
+- #### Crear configuración de la segunda app - *echo*
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
@@ -314,7 +316,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
       }
   }
   ```
-  Nótese como esta segunda aplicación usa terminación TLS en nginx, y no tiene un bloque de `upstream` sino que directamente está enviando el request a un backend existente.
+  Nótese como esta segunda aplicación usa terminación TLS en nginx, y no utiliza un bloque de `upstream` dentro de la configuración, sino que directamente está enviando el request a un backend existente sin hacer balanceo.
 
   Recargar la configuración de nginx:
   ```
