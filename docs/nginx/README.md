@@ -728,7 +728,9 @@ Esta integracion es un proceso manual y se realiza por medio de un componente ad
 El laboratorio cuenta con un despliegue de `Keycloak`, corriendo como un contenedor Docker en un servidor.\
 Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com** con las credenciales `admin/admin` y en este hay un client llamado `nginx-plus` y un usuario `test` con password `test`
 
-
+| Client                        | User                          |
+|-------------------------------|-------------------------------|
+| ![Keycloak1](./keycloak1.png) | ![Keycloak2](./keycloak2.png) |
 
 - La configuracion a grandes razgos consta de 5 pasos:
    1. Descargar el software necesario para la integracion de OIDC desde GitHub
