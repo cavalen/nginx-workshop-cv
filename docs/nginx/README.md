@@ -983,6 +983,9 @@ En este caso descargaremos la ultima version (latest)
   Debemos validar que el contenido del archivo sea el correcto respecto a los endpoints de OIDC de Keycloak.
 
   El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` nos puede ayudar en esta validación:
+
+  **http://keycloak.example.com/realms/master/.well-known/openid-configuration**
+  
   ![Keycloak3](./keycloak3.png)
 
   ```sh
