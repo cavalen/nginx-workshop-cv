@@ -748,8 +748,29 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
 
 ### 5. Auth con OpenID Connect (OIDC)
 NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicación o el backend.\
-Esta integración es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.\
-\
+Esta integración es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.
+
+```mermaid
+flowchart BT
+    subgraph " "
+        direction LR
+        id1(User)==>|Request for app|id2
+        id2-. Unauthenticated .->id1
+        id2(NGINX+)-->|Authenticated|id3(Backend app)
+    end
+    subgraph IDP
+        id4(Authorization Server)
+    end
+    id1<-. User authenticates directly with IdP .->IDP
+    IDP<-. NGINX exchanges authorization code for ID token .->id2
+    style id1 fill:#fff,stroke:#444,stroke-width:3px,color:#222
+    style id3 fill:#fff,stroke:#444,stroke-width:3px,color:#222
+    style id2 fill:#009639,stroke:#215732,stroke-width:2px,color:#fff
+    style id4 fill:#666,stroke:#222,stroke-width:1px,color:#fff
+```
+`Figure 1. High level components of an OpenID Connect environment`
+
+
 El laboratorio cuenta con un despliegue de `Keycloak`, corriendo como un contenedor Docker en un servidor.\
 Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com** con las credenciales `admin/admin` y en este hay un client llamado `nginx-plus` y un usuario `test` con password `test`
 
