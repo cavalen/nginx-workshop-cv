@@ -1,9 +1,9 @@
 # Instrucciones Lab NGINX Plus
 
 ## Contenido:
-[1. Instalación Nginx Plus](#1-instalacion-nginx-plus)\
-[2. Configuración base de nginx](#2-configuracion-base-de-nginx)\
-[3. Archivos de Configuración](#3-archivos-de-configuracion)\
+[1. Instalación Nginx Plus](#1-instalación-nginx-plus)\
+[2. Configuración base de nginx](#2-configuración-base-de-nginx)\
+[3. Archivos de Configuración](#3-archivos-de-configuración)\
 [4. Web Application Firewall (WAF)](#4-web-application-firewall-waf)\
 [5. Auth con OpenID Connect (OIDC)](#5-auth-con-openid-connect-oidc)
 
