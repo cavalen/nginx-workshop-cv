@@ -402,7 +402,7 @@ Volver a **https://brewz.example.com**
 
 Validar el mensaje de error, ahora modificado por el Ingress
 
-Por ultimo, eliminar el POD "fallido"\
+Por ultimo, eliminar el POD "fallido"
 ```
 k delete pod $POD -n brewz
 ```
@@ -412,3 +412,268 @@ k delete pod $POD -n brewz
 El siguiente paso en el camino a mejorar la experiencia del usuario y la seguridad de la aplicacion Brewz es activar seguridad en L7 por medio del WAF.
 
 Aplicamos una politica de WAF a las rutas `/` y `/api`
+
+Primero debemos aplicar la politicas de seguridad:\
+La policy es muy similar a la desplegada en el lab de NGINX Plus, pero en este caso son objetos de K8s (CRDs)
+
+En la carpeta del laboratorio `k8s/waf` se encuentra la politica de seguridad y los objetos relacionados a esta. Aplicar los manifiestos en orden:
+
+```
+k apply -f waf/1-waf-ap-logconf-grafana.yaml -n brewz
+k apply -f waf/2-waf-ap-custom-signatures.yaml -n brewz
+k apply -f waf/3-waf-ap-policy-spa.yaml -n brewz
+k apply -f waf/4-waf-policy-spa.yaml -n brewz
+```
+1-waf-ap-logconf-grafana.yaml
+```
+apiVersion: appprotect.f5.com/v1beta1
+kind: APLogConf
+metadata:
+  name: logconf-grafana
+spec:
+  content:
+    format: user-defined
+    format_string: "{\"campaign_names\":\"%threat_campaign_names%\",\"bot_signature_name\":\"%bot_signature_name%\",\"bot_category\":\"%bot_category%\",\"bot_anomalies\":\"%bot_anomalies%\",\"enforced_bot_anomalies\":\"%enforced_bot_anomalies%\",\"client_class\":\"%client_class%\",\"client_application\":\"%client_application%\",\"json_log\":%json_log%}"
+    max_message_size: 30k
+    max_request_size: "500"
+    escaping_characters:
+    - from: "%22%22"
+      to: "%22"
+  filter:
+    request_type: illegal
+```
+
+2-waf-ap-custom-signatures.yaml
+```
+apiVersion: appprotect.f5.com/v1beta1
+kind: APUserSig
+metadata:
+  name: hackerz-sig
+spec:
+  signatures:
+  - accuracy: medium
+    attackType:
+      name: Brute Force Attack
+    description: Medium accuracy user defined signature with tag (BadActors)
+    name: Hacker_medium_acc
+    risk: medium
+    rule: content:"hackerz"; nocase;
+    signatureType: request
+    systems:
+    - name: Microsoft Windows
+    - name: Unix/Linux
+  tag: BadActors
+```
+
+3-waf-ap-policy-spa.yaml
+```
+apiVersion: appprotect.f5.com/v1beta1
+kind: APPolicy
+metadata:
+  name: brewz-spa-security-policy
+spec:
+  policy:
+    name: brewz-spa-security-policy
+    template:
+      name: POLICY_TEMPLATE_NGINX_BASE
+    applicationLanguage: utf-8
+    enforcementMode: blocking
+    signature-requirements:
+    - tag: BadActors
+    signature-sets:
+    - name: hackerz-sig
+      block: true
+      signatureSet:
+        filter:
+          tagValue: BadActors
+          tagFilter: eq
+    bot-defense:
+      settings:
+        isEnabled: false
+    blocking-settings:
+      violations:
+        - block: true
+          description: Disallowed file upload content detected in body
+          name: VIOL_FILE_UPLOAD_IN_BODY
+        - block: true
+          description: Mandatory request body is missing
+          name: VIOL_MANDATORY_REQUEST_BODY
+        - block: true
+          description: Illegal parameter location
+          name: VIOL_PARAMETER_LOCATION
+        - block: true
+          description: Mandatory parameter is missing
+          name: VIOL_MANDATORY_PARAMETER
+        - block: true
+          description: JSON data does not comply with JSON schema
+          name: VIOL_JSON_SCHEMA
+        - block: true
+          description: Illegal parameter array value
+          name: VIOL_PARAMETER_ARRAY_VALUE
+        - block: true
+          description: Illegal Base64 value
+          name: VIOL_PARAMETER_VALUE_BASE64
+        - block: true
+          description: Disallowed file upload content detected
+          name: VIOL_FILE_UPLOAD
+        - block: true
+          description: Illegal request content type
+          name: VIOL_URL_CONTENT_TYPE
+        - block: true
+          description: Illegal static parameter value
+          name: VIOL_PARAMETER_STATIC_VALUE
+        - block: true
+          description: Illegal parameter value length
+          name: VIOL_PARAMETER_VALUE_LENGTH
+        - block: true
+          description: Illegal parameter data type
+          name: VIOL_PARAMETER_DATA_TYPE
+        - block: true
+          description: Illegal parameter numeric value
+          name: VIOL_PARAMETER_NUMERIC_VALUE
+        - block: true
+          description: Parameter value does not comply with regular expression
+          name: VIOL_PARAMETER_VALUE_REGEXP
+        - block: false
+          description: Illegal URL
+          name: VIOL_URL
+        - block: true
+          description: Illegal parameter
+          name: VIOL_PARAMETER
+        - block: true
+          description: Illegal empty parameter value
+          name: VIOL_PARAMETER_EMPTY_VALUE
+        - block: true
+          description: Illegal repeated parameter name
+          name: VIOL_PARAMETER_REPEATED
+        - alarm: true
+          block: false
+          name: VIOL_DATA_GUARD
+        - alarm: true
+          block: false
+          name: VIOL_EVASION
+        - alarm: true
+          block: false
+          name: VIOL_RATING_THREAT
+      evasions:
+      - description: "Multiple decoding"
+      - enabled: true
+      - maxDecodingPasses: 2
+    server-technologies:
+    - serverTechnologyName: MongoDB
+    - serverTechnologyName: Unix/Linux
+    - serverTechnologyName: Node.js
+    - serverTechnologyName: Nginx
+    data-guard:
+      creditCardNumbers: true
+      enabled: true
+      enforcementMode: ignore-urls-in-list
+      enforcementUrls: []
+      lastCcnDigitsToExpose: 4
+      lastSsnDigitsToExpose: 4
+      maskData: true
+      usSocialSecurityNumbers: true
+    responsePageReference:
+      link: "https://raw.githubusercontent.com/cavalen/acme/master/response-pages-v2.json"
+    whitelistIpReference:
+      link: "https://raw.githubusercontent.com/cavalen/acme/master/whitelist-ips.json"
+```
+
+4-waf-policy-spa.yaml
+```
+apiVersion: k8s.nginx.org/v1
+kind: Policy
+metadata:
+  name: waf-policy-spa
+spec:
+  waf:
+    enable: true
+    apPolicy: "brewz/brewz-spa-security-policy"
+    securityLog:
+      enable: true
+      apLogConf: "brewz/logconf-grafana"
+      #logDest: "syslog:server=logstash.monitoring.svc.cluster.local:5044"
+      logDest: "syslog:server=grafana.example.com:8515"
+```
+
+Desplegar por ultimo el VirtualServer con los cambios y las politica de WAF activa:
+El cambio respecto a la configuracion anterior es la adicion de la directiva policies en las rutas `/` y `/api`:
+```
+policies:
+  - name: waf-policy-spa
+```
+```
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: brewz
+  namespace: brewz
+  annotations:
+    version : "4. WAF"
+spec:
+  host: brewz.example.com
+  tls:
+    secret: brewz-secret
+  http-snippets: |
+    match brewzhealthcheck {
+      status 200;
+      body ~ "Brewz";
+    }
+  upstreams:
+    - name: spa
+      service: spa
+      port: 8080
+      lb-method: round_robin
+    - name: api
+      service: api
+      port: 8000
+    - name: inventory
+      service: inventory
+      port: 8002
+    - name: recommendations
+      service: recommendations
+      port: 8001
+    - name: spa-dark
+      service: spa-dark
+      port: 8080
+  routes:
+    - path: /
+      policies:
+        - name: waf-policy-spa
+      location-snippets: |
+        health_check match=brewzhealthcheck interval=5s uri=/;
+      errorPages:
+      - codes: [502, 503]
+        return:
+          code: 218
+          body: "<center><h1>Tenemos inconvenientes tecnicos y estamos trabajando para solucionarlo ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
+      action:
+        pass: spa
+    - path: /api
+      policies:
+        - name: waf-policy-spa
+      action:
+        pass: api
+    - path: /api/inventory
+      action:
+        proxy:
+          upstream: inventory
+          rewritePath: /api/inventory
+    - path: /images
+      action:
+        proxy:
+          upstream: api
+          rewritePath: /images
+    - path: /api/recommendations
+      action:
+        proxy:
+          upstream: recommendations
+          rewritePath: /api/recommendations
+```
+
+Validar, en **https://brewz.example.com**, visitar el primer item de la tienda y comprobar que existe un numero de tarjeta de credito ofuscado
+
+Intentar algun ataque sencillo como XSS o SQLi:
+
+Adicionar al path un XSS `https://brewz.example.com/<script>`
+Adicionar al path un SQLi `https://brewz.example.com/?param='or 1=1#'`
