@@ -768,10 +768,45 @@ flowchart BT
     style id2 fill:#009639,stroke:#215732,stroke-width:2px,color:#fff
     style id4 fill:#666,stroke:#222,stroke-width:1px,color:#fff
 ```
-`Figure 1. High level components of an OpenID Connect environment`
+`Figura 1. Componentes a Alto nivel de un entorno de OpenID Connect`
 
+Esta implementación asume lo siguiente del entorno:
+  * El identity provider (IdP) soportas OpenID Connect 1.0
+  * El "authorization code flow" esta en uso
+  * NGINX Plus esta configurado como un Relying Party
+  * El IdP conoce a NGINX Plus como un cliente confidentialnt o un cliente publico usando PKCE
 
-El laboratorio cuenta con un despliegue de `Keycloak`, corriendo como un contenedor Docker en un servidor.\
+Con este entorno, tanto el client como NGINX Plus se comunican directamente con el IdP en diferentes momentos durante el proceso de autenticación.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Browser
+    participant IdP
+    participant NGINX Plus
+    participant Web App
+    User->>NGINX Plus: Requests protected resource
+    NGINX Plus->>Browser: Sends redirect to IdP for authentication
+    Browser->>IdP: Requests login page
+    User->>IdP: Provides authentication and consent
+    IdP->>Browser: Sends redirect w/ authZ code
+    Browser->>NGINX Plus: Redirected for code exchange
+    NGINX Plus->>IdP: Sends authZ code
+    IdP->>NGINX Plus: Sends ID(+refresh) token
+    NGINX Plus-->>NGINX Plus: Validates ID token, stores in keyval, creates session cookie
+    Note right of NGINX Plus: keyvals zone for ID token (JWT)
+    Note right of NGINX Plus: keyval zone for refresh token
+    NGINX Plus->>Browser: Sends redirect to original URI with session cookie
+    Browser->>NGINX Plus: Requests original URI, supplies session cookie
+    NGINX Plus-->>NGINX Plus: Obtains ID token from keyval, validates JWT
+    NGINX Plus->>Web App: Proxies request
+    Web App->>Browser: Sends resource
+```
+`Figura 2. Flujo de autorización de OpenID Connect`
+
+El laboratorio cuenta con un despliegue de `Keycloak` usado como Identity Provider (IdP) el cual valida las credenciales del usuario.
+
 Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com** con las credenciales `admin/admin` y en este hay un client llamado `nginx-plus` y un usuario `test` con password `test`
 
 | Client                        | User                          |
