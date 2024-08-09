@@ -334,6 +334,15 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
+  Vamos a adicionar estas directivas a la configuración:
+  ```
+          add_header X-ServerIP $server_addr;
+          add_header X-srv-hostname $hostname;
+
+          proxy_set_header X-Client-IP $remote_addr;
+          proxy_set_header X-Hola "Mundo";
+  ```
+
   El archivo de configuración echo.example.com.conf debe quedar como este:
   ```
   server {
