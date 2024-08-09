@@ -4,6 +4,8 @@
 [1. Instalación Nginx Plus](#1-instalación-nginx-plus)\
 [2. Configuración base de nginx](#2-configuración-base-de-nginx)\
 [3. Archivos de Configuración](#3-archivos-de-configuración)\
+  . [3.1 Primera Aplicación - f5app.example.com](#crear-configuración-de-la-primera-app---f5appexamplecom)\
+  . [3.2 Primera Aplicación - echo.example.com](#crear-configuración-de-la-segunda-app---echoexamplecom)\
 [4. Web Application Firewall (WAF)](#4-web-application-firewall-waf)\
 [5. Auth con OpenID Connect (OIDC)](#5-auth-con-openid-connect-oidc)
 
@@ -212,7 +214,7 @@ Y son los pasos que seguiremos a continuación:
 ### 3. Archivos de Configuración
 Los archivos de configuración de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d/` y que cada sitio tenga un archivo `.conf` propio, con un nombre significativo, por ejemplo `api.misitio.com.conf`
 
-- #### Crear configuración del primer sitio - *f5app*
+- ### Crear configuración de la primera App - *f5app.example.com*
   ```
   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
   ```
@@ -295,7 +297,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
 
   Probando desde el browser en **http://f5app.example.com** podemos notar por los colores del app, que ahora los request del cliente se envían hacia dos instancias del backend. También se puede validar en el Dashboard.
 
-- #### Crear configuración de la segunda app - *echo*
+- ### Crear configuración de la segunda app - *echo.example.com*
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
@@ -387,7 +389,7 @@ La política de seguridad que usaremos se compone de:
   - JSON para definición de "Server Technologies" usadas en el App a proteger
   - JSON con lista blanca de direcciones IP a los cuales no se le aplica validación por parte del WAF
   -  JSON con violaciones especificas a nivel protocolo HTTP
-  -  JSON con violaciones tipo Evasion
+  -  JSON con violaciones tipo Evasión
 
 Ahora procederemos a crear todos los archivos de configuración del WAF y activarlo para una de las aplicaciones desplegadas en un paso anterior
 
