@@ -988,9 +988,6 @@ En este caso descargaremos la ultima version (latest)
   
   ![Keycloak3](./keycloak3.png)
 
-  ```sh
-  sudo vim openid_connect.server_conf
-  ```
   Los valores importantes a configurar están en las directivas `map` del archivo
   | Parámetro | Valor |
   |-----------|-------|
@@ -1207,7 +1204,8 @@ En este caso descargaremos la ultima version (latest)
   ```sh
   sudo nginx -s reload
   ```
-  Validamos en un browser en **https://oidc.example.com**\
+  Validamos en un browser en **https://oidc.example.com**
+
   La aplicación debe ahora solicitar credenciales a Keycloak antes de permitir acceso a la App. Usar `test:test`
   |                               |                               |
   |-------------------------------|-------------------------------|
