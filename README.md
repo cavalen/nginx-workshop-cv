@@ -1058,7 +1058,7 @@ En este caso descargaremos la ultima version (latest)
 
   # vim: syntax=nginx
   ```
-- Copiar archivos de configuracion a carpeta de nginx, donde estan los archivos de configuracion de la app a la que vamos a integrar autenticacion.
+- Copiar archivos generados por el script a la carpeta de nginx, donde estan la configuracion de la app a la que vamos a integrar autenticacion.
   ```
   sudo cp openid_connect* /etc/nginx/conf.d/
   ```
@@ -1124,5 +1124,9 @@ En este caso descargaremos la ultima version (latest)
   sudo nginx -s reload
   ```
   Validamos en un browser en **https://oidc.example.com**\
-  La aplicacion debe ahora solicitar credenciales a Keycloak antes de permitir acceso a la App.
-  
+  La aplicacion debe ahora solicitar credenciales a Keycloak antes de permitir acceso a la App. Usar `test:test`
+  |                               |                               |
+  |-------------------------------|-------------------------------|
+  | ![Keycloak4](./keycloak4.png) | ![Keycloak5](./keycloak5.png) |
+
+### -FIN-
