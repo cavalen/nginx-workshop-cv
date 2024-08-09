@@ -13,11 +13,6 @@ Se recomienda colocar la calidad de colores a lo minimo para un mejor desempeño
 |--------------------------------------|----------------------------------|
 | ![RDP Windows](docs/rdp-windows.png) | ![RDP Windows](docs/rdp-mac.png) |
 
-Abrir la consola del Jumphost y clonar el repositorio del Lab
-```sh
-git clone https://github.com/cavalen/nginx-workshop-cv
-```
----
 
 ## Descripcion del Entorno:
 
