@@ -675,5 +675,5 @@ Validar, en **https://brewz.example.com**, visitar el primer item de la tienda y
 
 Intentar algun ataque sencillo como XSS o SQLi:
 
-Adicionar al path un XSS `https://brewz.example.com/<script>`
+Adicionar al path un XSS `https://brewz.example.com/<script>`\
 Adicionar al path un SQLi `https://brewz.example.com/?param='or 1=1#'`
