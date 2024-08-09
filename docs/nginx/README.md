@@ -1,20 +1,20 @@
 # Instrucciones Lab NGINX Plus
 
 ## Contenido:
-[1. Instalacion Nginx Plus](#1-instalacion-nginx-plus)\
-[2. Configuracion base de nginx](#2-configuracion-base-de-nginx)\
-[3. Archivos de Configuracion](#3-archivos-de-configuracion)\
+[1. Instalación Nginx Plus](#1-instalacion-nginx-plus)\
+[2. Configuración base de nginx](#2-configuracion-base-de-nginx)\
+[3. Archivos de Configuración](#3-archivos-de-configuracion)\
 [4. Web Application Firewall (WAF)](#4-web-application-firewall-waf)\
 [5. Auth con OpenID Connect (OIDC)](#5-auth-con-openid-connect-oidc)
 
 
 ### 1. Instalación Nginx Plus
-Nota: La instalacion y la configuracion de NGINX Plus se realizar por linea de comandos y editando archivos de configuracion de texto.\
+Nota: La instalación y la configuración de NGINX Plus se realizar por linea de comandos y editando archivos de configuración de texto.\
 Se recomienda tener alguna experiencia en el CLI de Linux.
 
-En la guia se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
+En la guía se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
 
-<mark>IMPORTANTE: Los pasos de configuracion de esta guia se hacen sobre el servidor `nginx`\
+<mark>IMPORTANTE: Los pasos de configuración de esta guía se hacen sobre el servidor `nginx`\
 Usuario `ubuntu` con password `HelloUDF`</mark>
 ```
 ssh ubuntu@10.1.1.7
@@ -24,7 +24,7 @@ Para validar que estemos en el servidor correcto, podemos fijarnos en el prompt 
 
 El flujo del despliegue se puede ver de esta forma
 ![Flujo Instalacion](./install-flow.png)
-Y son los pasos que seguiremos a continuacion:
+Y son los pasos que seguiremos a continuación:
 
 - Pre-requisitos del sistema operativo:
   ```
@@ -59,7 +59,7 @@ Y son los pasos que seguiremos a continuacion:
 
   `nginx-plus` es el paquete principal de nginx\
   `app-protect` es el paquete del WAF\
-  `nginx-plus-module-njs` es el paquete de NGINX JavaScript (NJS), utilizado por la integracion de OIDC
+  `nginx-plus-module-njs` es el paquete de NGINX JavaScript (NJS), utilizado por la integración de OIDC
 - Activar nginx a la hora de iniciar el sistema y validar la instalación:
   ```
   sudo systemctl enable nginx
@@ -69,23 +69,23 @@ Y son los pasos que seguiremos a continuacion:
   ```
   `nginx -v` muestra la version de nginx instalada\
   `curl http://0:80` retorna la pagina por defecto de nginx
-- Borrar archivo de configuracion del sitio "default", ya que no lo usaremos
+- Borrar archivo de configuración del sitio "default", ya que no lo usaremos
   ```
   sudo rm /etc/nginx/conf.d/default.conf
   ```
 
-### 2. Configuracion base de nginx
-- Editar el archivo `/etc/nginx/nginx.conf` para cargar los modulos de WAF y NJS\
+### 2. Configuración base de nginx
+- Editar el archivo `/etc/nginx/nginx.conf` para cargar los módulos de WAF y NJS\
   `load_module modules/ngx_http_app_protect_module.so;`\
   `load_module modules/ngx_http_js_module.so;`\
   \
-  Adicionalmente para configurar 2 variables que se recomienda modificar a la hora de usar NGINX JavaScript y la integracion con OIDC\
+  Adicionalmente para configurar 2 variables que se recomienda modificar a la hora de usar NGINX JavaScript y la integración con OIDC\
   `variables_hash_max_size 2048;`\
   `variables_hash_bucket_size 128;`\
   ```
   sudo vim /etc/nginx/nginx.conf
   ```
-  El archivo de configuracion `nginx.conf` debe quedar como este:
+  El archivo de configuración `nginx.conf` debe quedar como este:
   ```
   user  nginx;
   worker_processes  auto;
@@ -167,7 +167,7 @@ Y son los pasos que seguiremos a continuacion:
   #}
   ```
 
-- Crear configuracion para la exponer el Dashboard y el API de NGINX Plus.
+- Crear configuración para la exponer el Dashboard y el API de NGINX Plus.
   Por defecto este Dashboard se expone en el puerto 8080 y se consulta via Browser
   ```
   sudo vim /etc/nginx/conf.d/api.conf
@@ -201,7 +201,7 @@ Y son los pasos que seguiremos a continuacion:
       }
   }
   ```
-- Recargar la configuracion de nginx con el comando
+- Recargar la configuración de nginx con el comando
   ```
   sudo nginx -s reload
   ```
@@ -209,14 +209,14 @@ Y son los pasos que seguiremos a continuacion:
 
   ![NGINX Dashboard](./nginx-dashboard.png)
  ---
-### 3. Archivos de Configuracion
-Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d/` y que cada sitio tenga un archivo `.conf` propio, con un nombre significativo, por ejemplo `api.misitio.com.conf`
+### 3. Archivos de Configuración
+Los archivos de configuración de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d/` y que cada sitio tenga un archivo `.conf` propio, con un nombre significativo, por ejemplo `api.misitio.com.conf`
 
-- #### Crear configuracion del primer sitio - *f5app*
+- #### Crear configuración del primer sitio - *f5app*
   ```
   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
   ```
-  El archivo de configuracion `f5app.example.com.conf` debe quedar como este:
+  El archivo de configuración `f5app.example.com.conf` debe quedar como este:
   ```
   # Custom Health Check
   match f5app_health {
@@ -247,7 +247,7 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       #sticky cookie helloworld expires=1h domain=.example.com path=/;  ## SESSION PERSISTENCE
   }
   ```
-  Recargar la configuracion de nginx:
+  Recargar la configuración de nginx:
   ```
   sudo nginx -s reload
   ```
@@ -260,7 +260,7 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   - ir a Demos > Credit Cards
   - Correr un XSS - `http://f5app.example.com/<script>`
 
-  Validar el Dashboard de NGINX que ya podemos ver informacion sobre f5app, su estado de salud y monitores en **http://dashboard.example.com:8080**
+  Validar el Dashboard de NGINX que ya podemos ver información sobre f5app, su estado de salud y monitores en **http://dashboard.example.com:8080**
 
   Realicemos una modificacion al Heath-Check:
   ```
@@ -273,15 +273,15 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       body ~ "Workshop K8S vLab";
   }
   ```
-  Recargamos la configuracion de nginx con `sudo nginx -s reload` y probamos de nuevo el app
+  Recargamos la configuración de nginx con `sudo nginx -s reload` y probamos de nuevo el app
   ![502 error](./f5app-502.png)
   
   **Que sucede?** El aplicativo no carga y responde con un error 502 pues no hay backends/upstreams saludables.
 
-  En el Dashboard de NGINX podemos ver tambien los health checks realizados y el estado del servidor
+  En el Dashboard de NGINX podemos ver también los health checks realizados y el estado del servidor
   ![Dashboard f5app](./f5app-dashboard.png)
 
-  ### <mark>**Reversemos los cambios en el Health Check y recargamos la configuracion de nginx antes de continuar**</mark>
+  ### <mark>**Reversar los cambios en el Health Check y recargamos la configuración de nginx antes de continuar**</mark>
     ```
   match f5app_health {
       status 200;
@@ -289,15 +289,15 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   }
   ```
   Como siguiente prueba, activaremos el LoadBalancing en Nginx.
-  Para esto, quitamos el comentario `#` en del segundo `server` en el bloque `upstream f5app-backend` hacia el final del archivo y recargamos la configuracion de nginx.\
+  Para esto, quitamos el comentario `#` en del segundo `server` en el bloque `upstream f5app-backend` hacia el final del archivo y recargamos la configuración de nginx.\
 
-  Probando desde el browser en **http://f5app.example.com** podemos notar por los colores del app, que ahora los request del cliente se envian hacia dos instancias del backend. También se puede validar en el Dashboard.
+  Probando desde el browser en **http://f5app.example.com** podemos notar por los colores del app, que ahora los request del cliente se envían hacia dos instancias del backend. También se puede validar en el Dashboard.
 
-- #### Crear configuracion del segundo sitio - *echo*
+- #### Crear configuración del segundo sitio - *echo*
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
-  El archivo de configuracion `echo.example.com.conf` debe quedar como este:
+  El archivo de configuración `echo.example.com.conf` debe quedar como este:
   ```
   server {
       listen 443 ssl;
@@ -314,25 +314,25 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
       }
   }
   ```
-  Notese como esta segunda aplicacion usa terminacion TLS en nginx, y no tiene un bloque de `upstream` sino que directamente está enviando el request a un backend existente.
+  Nótese como esta segunda aplicación usa terminación TLS en nginx, y no tiene un bloque de `upstream` sino que directamente está enviando el request a un backend existente.
 
-  Recargar la configuracion de nginx:
+  Recargar la configuración de nginx:
   ```
   sudo nginx -s reload
   ```
 
   Probar desde el browser **https://echo.example.com**
 
-  Esta es una aplicacion sencilla que muestra informacion sobre el request en formato json.
+  Esta es una aplicación sencilla que muestra información sobre el request en formato json.
 
   ![echo](./echo.png)
 
-  Configuremos ahora *"header insertion"*, ya que esta aplicacion permite facilmente ver los Headers.
+  Configuremos ahora *"header insertion"*, ya que esta aplicación permite fácilmente ver los Headers.
 
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
-  El archivo de configuracion echo.example.com.conf debe quedar como este:
+  El archivo de configuración echo.example.com.conf debe quedar como este:
   ```
   server {
       listen 443 ssl;
@@ -358,25 +358,25 @@ Los archivos de configuracion de los sitios, se recomienda crearlos en la ruta `
   `add_header` Adiciona headers a la respuesta del server\
   `proxy_set_header` Adiciona headers al request que se envia al server\
   
-  El parametro `$server_addr` es una variable interna de nginx. El listado de variables se pueden consultar en la documentacion en **http://nginx.org/en/docs/http/ngx_http_core_module.html#variables** 
+  El parámetro `$server_addr` es una variable interna de nginx. El listado de variables se pueden consultar en la documentación en **http://nginx.org/en/docs/http/ngx_http_core_module.html#variables** 
 
 ---
 
 ### 4. Web Application Firewall (WAF)
-NGINX App Protect (v4) utiliza archivos en formato JSON para la definicion de la politica de seguridad declarativa. Estos archivos pueden estar en cualquier ubucacion en el filesystem, para este Lab los colocaremos en la ruta `/etc/nginx/waf/`
+NGINX App Protect (v4) utiliza archivos en formato JSON para la definición de la política de seguridad declarativa. Estos archivos pueden estar en cualquier ubicación en el filesystem, para este Lab los colocaremos en la ruta `/etc/nginx/waf/`
 
-También es posible tener la politica como un archivo binario llamado "policy bundle" que se compila por medio de un software llamado [NGINX App Protect Policy Compiler](https://docs.nginx.com/nginx-app-protect-waf/v5/admin-guide/compiler/), pero para este Lab usaremos los archivos JSON
+También es posible tener la política como un archivo binario llamado "policy bundle" que se compila por medio de un software llamado [NGINX App Protect Policy Compiler](https://docs.nginx.com/nginx-app-protect-waf/v5/admin-guide/compiler/), pero para este Lab usaremos los archivos JSON
 
 La política de seguridad que usaremos se compone de:
-- Un archivo JSON con la configuracion del formato del log del WAF
-- Un archivo JSON con la politica base, el cual se referencia desde `nginx.conf`
-- Archivos JSON con referencias a varios bloques de configuracion (opcionales), en nuestro caso tenemos:
-  - JSON para definicion de "Server Technologies" usadas en el App a proteger
-  - JSON con lista blanca de direcciones IP a los cuales no se le aplica validacion por parte del WAF
+- Un archivo JSON con la configuración del formato del log del WAF
+- Un archivo JSON con la política base, el cual se referencia desde `nginx.conf`
+- Archivos JSON con referencias a varios bloques de configuración (opcionales), en nuestro caso tenemos:
+  - JSON para definición de "Server Technologies" usadas en el App a proteger
+  - JSON con lista blanca de direcciones IP a los cuales no se le aplica validación por parte del WAF
   -  JSON con violaciones especificas a nivel protocolo HTTP
   -  JSON con violaciones tipo Evasion
 
-Ahora procederemos a crear todos los archivos de configuracion del WAF y activarlo para una de las aplicaciones desplegadas en un paso anterior
+Ahora procederemos a crear todos los archivos de configuración del WAF y activarlo para una de las aplicaciones desplegadas en un paso anterior
 
 -  Crear archivo de log profile en `/etc/nginx/waf/`
    ```
@@ -384,7 +384,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
    sudo vim /etc/nginx/waf/log-grafana.json
    ```
    Este archivo usa un formato de log especifico para un dashboard de Grafana.\
-   Existe un formato `default` orientado a logs basicos via syslog y otros formatos predefinidos como `big-iq`, `arcsight`, `grpc`, `splunk` y `user-defined` que es el utilizado en este Lab.
+   Existe un formato `default` orientado a logs básicos via syslog y otros formatos predefinidos como `big-iq`, `arcsight`, `grpc`, `splunk` y `user-defined` que es el utilizado en este Lab.
    ```
    {
      "filter": {
@@ -404,7 +404,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
      }
    }
    ```
-- Crear archivo de la politica de seguridad base en `/etc/nginx/waf/`
+- Crear archivo de la política de seguridad base en `/etc/nginx/waf/`
    ```
    sudo vim /etc/nginx/waf/NginxCustomPolicy.json
    ```
@@ -510,10 +510,10 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
        }
    }
    ```
-   Si revisamos la estructura del archivo podemos ver los diferentes bloques de configuracion, como las violaciones, el modo de bloqueo (Blocking / Transparent), DataGuard (Validar data sensible expuesta por el servidor), response Pages (Pagina de respuesta a Violaciones), Codigos de respuesta HTTP validos y algunos otras configuraciones que se encuentran en la [documentacion de la politica declarativa de NGINX App Protect]( https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/)\
+   Si revisamos la estructura del archivo podemos ver los diferentes bloques de configuración, como las violaciones, el modo de bloqueo (Blocking / Transparent), DataGuard (Validar data sensible expuesta por el servidor), response Pages (Pagina de respuesta a Violaciones), Códigos de respuesta HTTP validos y algunos otras configuraciones que se encuentran en la [documentación de la política declarativa de NGINX App Protect]( https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/)\
    **https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/**
 
-- Crear archivo de definicion de "Server Technologies" para la politica de seguridad en `/etc/nginx/waf/`
+- Crear archivo de definición de "Server Technologies" para la política de seguridad en `/etc/nginx/waf/`
    ```
    sudo vim /etc/nginx/waf/server-technologies.json
    ```
@@ -533,7 +533,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
      }
    ]
    ```
-- Crear archivo de definicion de "IP Whitelist" para la politica de seguridad en `/etc/nginx/waf/`
+- Crear archivo de definición de "IP Whitelist" para la política de seguridad en `/etc/nginx/waf/`
    ```
    sudo vim /etc/nginx/waf/whitelist-ips.json
    ```
@@ -564,7 +564,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
        }
    ]
    ```
-- Crear archivo de definicion de "HTTP Protocol Compliance" para la politica de seguridad en `/etc/nginx/waf/`
+- Crear archivo de definición de "HTTP Protocol Compliance" para la política de seguridad en `/etc/nginx/waf/`
    ```
    sudo vim /etc/nginx/waf/http-protocols.json
    ```
@@ -610,7 +610,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
        }
    ]
    ```
-- Crear archivo de definicion de "Tecnicas de Evasion" para la politica de seguridad en `/etc/nginx/waf/`
+- Crear archivo de definición de "Técnicas de Evasion" para la política de seguridad en `/etc/nginx/waf/`
    ```
    sudo vim /etc/nginx/waf/evasions.json
    ```
@@ -651,13 +651,13 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
        }
    ]
    ```
-- Como ultimo paso, activamos el WAF para la aplicacion `f5app`, editando el archivo `/etc/nginx/conf.d/f5app.example.com.conf`
+- Como ultimo paso, activamos el WAF para la aplicación `f5app`, editando el archivo `/etc/nginx/conf.d/f5app.example.com.conf`
    ```
    sudo vim /etc/nginx/conf.d/f5app.example.com.conf
    ```
-   Las configuraciones a nivel WAF adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicacion f5app) o en un `location` especifico. En este caso lo hacemos para toda la aplicacion.
+   Las configuraciones a nivel WAF adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicación f5app) o en un `location` especifico. En este caso lo hacemos para toda la aplicación.
 
-   Como requisito, el modulo de WAF debe estar cargado a NGINX, esto lo hicimos en un paso anterior agreagando la directiva `load_module` en `nginx.conf`
+   Como requisito, el modulo de WAF debe estar cargado a NGINX, esto lo hicimos en un paso anterior agregando la directiva `load_module` en `nginx.conf`
 
    `app_protect_enable on;` Activa el WAF.\
    `app_protect_security_log_enable on;` Activa logs para el WAF.\
@@ -700,20 +700,20 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
    }
    ```
 
-  Recargar la configuracion de nginx:
+  Recargar la configuración de nginx:
   ```
   sudo nginx -s reload
   ```
-  Validar configuracion:
+  Validar configuración:
   ```
   sudo nginx -t
   ```
 
   Probar desde el browser **http://f5app.example.com**\
-  Hacer algunas simulaciones de ataques a la aplicacion, <mark>y tomar nota del SupportID</mark>
+  Hacer algunas simulaciones de ataques a la aplicación, <mark>y tomar nota del SupportID</mark>
     - Adicionar al path un XSS `http://f5app.example.com/<script>`
     - Adicionar al path un SQLi `http://f5app.example.com/?a='or 1=1#'`
-    - Navegar en la aplicacion al menu Demos > CC Numbers y validar que la configuracion de DataGuard ofusca informacion sensible.
+    - Navegar en la aplicacion al menu Demos > CC Numbers y validar que la configuración de DataGuard ofusca información sensible.
 
   En Grafana validar logs del WAF:\
   Ir a **http://grafana.example.com:3000** y ver los Dashboards Attack Signatures, Main Dashboard y SupportIDs\
@@ -722,8 +722,8 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
   ![Grafana Dashboars](./grafana2.png)
 
 ### 5. Auth con OpenID Connect (OIDC)
-NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicacion o el backend.\
-Esta integracion es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.\
+NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicación o el backend.\
+Esta integración es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.\
 \
 El laboratorio cuenta con un despliegue de `Keycloak`, corriendo como un contenedor Docker en un servidor.\
 Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com** con las credenciales `admin/admin` y en este hay un client llamado `nginx-plus` y un usuario `test` con password `test`
@@ -732,14 +732,14 @@ Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com**
 |-------------------------------|-------------------------------|
 | ![Keycloak1](./keycloak1.png) | ![Keycloak2](./keycloak2.png) |
 
-- La configuracion a grandes razgos consta de 5 pasos:
-   1. Descargar el software necesario para la integracion de OIDC desde GitHub
-   2. Ejecutar un script de configuracion via linea de comandos
-   3. Validar la configuracion generada por el script (Datos y rutas del Identity Provider)
-   4. Copiar la configuracion generada por el script a la misma ruta donde se encuentra el archivo de configuracion de la aplicacion a la que queremos integrar autenticacion (generalmente `/etc/nginx/conf.d`)
-   5. Editar la configuracion del aplicativo (`/etc/nginx/conf.d/<nombre-app>.conf`) y adicionar las directivas generadas por el script.
+- La configuración a grandes rasgos consta de 5 pasos:
+   1. Descargar el software necesario para la integración de OIDC desde GitHub
+   2. Ejecutar un script de configuración via linea de comandos
+   3. Validar la configuración generada por el script (Datos y rutas del Identity Provider)
+   4. Copiar la configuración generada por el script a la misma ruta donde se encuentra el archivo de configuración de la aplicación a la que queremos integrar autenticación (generalmente `/etc/nginx/conf.d`)
+   5. Editar la configuración del aplicativo (`/etc/nginx/conf.d/<nombre-app>.conf`) y adicionar las directivas generadas por el script.
 
-- Crear un nuevo "sitio" al cual habilitar autenticacion por medio de OIDC
+- Crear un nuevo "sitio" al cual habilitar autenticación por medio de OIDC
   ```
   sudo vim /etc/nginx/conf.d/oidc.example.com.conf
   ```
@@ -787,12 +787,12 @@ En este caso descargaremos la ultima version (latest)
   `-s 1234567890ABCDEF` Client Secret tal como esta configurado en el OpenID Connect Provider\
   `http://keycloak.example.com/realms/master/.well-known/openid-configuration` Discovery interface del IdP.
 
-- Configurar Parametros de OIDC (1)
+- Configurar Parámetros de OIDC (1)
 
   El script crea varios archivos, el primero a editar es `openid_connect_configuration.conf`
 
   Solo es necesario editar la directiva `resolver` al comienzo del archivo.\
-  Como estamos usando el dominio de pruebas `example.com` este no resuelve con el DNS publico por defecto que utiliza el script (8.8.8.8) y debemos indicar la direccion IP del servicio DNS interno `127.0.0.53`.
+  Como estamos usando el dominio de pruebas `example.com` este no resuelve con el DNS publico por defecto que utiliza el script (8.8.8.8) y debemos indicar la dirección IP del servicio DNS interno `127.0.0.53`.
 
   ```
   sudo vim openid_connect.server_conf
@@ -896,19 +896,19 @@ En este caso descargaremos la ultima version (latest)
     # vim: syntax=nginx
     ```
 
-- Configurar Parametros de OIDC (2)
+- Configurar Parámetros de OIDC (2)
 
   El segundo archivo a configurar es `openid_connect_configuration.conf`.
   Debemos validar que el contenido del archivo sea el correcto respecto a los endpoints de OIDC de Keycloak.
 
-  El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` nos puede ayudar en esta validacion:
+  El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` nos puede ayudar en esta validación:
   ![Keycloak3](./keycloak3.png)
 
   ```
   sudo vim openid_connect.server_conf
   ```
-  Los valores importantes a configurar estan en las directivas `map` del archivo
-  | Parametro | Valor |
+  Los valores importantes a configurar están en las directivas `map` del archivo
+  | Parámetro | Valor |
   |-----------|-------|
   | `$oidc_authz_endpoint` | `oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/auth;` |
   | `$oidc_token_endpoint` | `oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/token;` |
@@ -1058,15 +1058,15 @@ En este caso descargaremos la ultima version (latest)
 
   # vim: syntax=nginx
   ```
-- Copiar archivos generados por el script a la carpeta de nginx, donde estan la configuracion de la app a la que vamos a integrar autenticacion.
+- Copiar archivos generados por el script a la carpeta de nginx, donde están la configuración de la app a la que vamos a integrar autenticación.
   ```
   sudo cp openid_connect* /etc/nginx/conf.d/
   ```
-- Editar aplicacion Web para integrar OIDC
+- Editar aplicación Web para integrar OIDC
   
-  En uno de los primeros pasos de la configuracion de OIDC, creamos un archivo para el sitio `oidc.example.com`. Ahora debemos editarlo para incluir lo que el script de configuracion creo y lo que hemos editado de forma manual.
+  En uno de los primeros pasos de la configuración de OIDC, creamos un archivo para el sitio `oidc.example.com`. Ahora debemos editarlo para incluir lo que el script de configuración creo y lo que hemos editado de forma manual.
 
-  El script crea un archivo llamado `frontend.conf`, este archivo no es necesario, pero muestra las directivas que debe tener una aplicacion para hacer la integracion de OIDC y se usa como ejemplo de configuracion.
+  El script crea un archivo llamado `frontend.conf`, este archivo no es necesario, pero muestra las directivas que debe tener una aplicación para hacer la integración de OIDC y se usa como ejemplo de configuración.
 
   ```
   sudo vim /etc/nginx/conf.d/oidc.example.com.conf
@@ -1124,7 +1124,7 @@ En este caso descargaremos la ultima version (latest)
   sudo nginx -s reload
   ```
   Validamos en un browser en **https://oidc.example.com**\
-  La aplicacion debe ahora solicitar credenciales a Keycloak antes de permitir acceso a la App. Usar `test:test`
+  La aplicación debe ahora solicitar credenciales a Keycloak antes de permitir acceso a la App. Usar `test:test`
   |                               |                               |
   |-------------------------------|-------------------------------|
   | ![Keycloak4](./keycloak4.png) | ![Keycloak5](./keycloak5.png) |
