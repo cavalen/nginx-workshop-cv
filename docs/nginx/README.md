@@ -647,7 +647,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
    ```
    sudo vim /etc/nginx/conf.d/f5app.example.com.conf
    ```
-   Las configuraciones a nivel WAF adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicacion f5app) o en un `location` especifico. En este caso lo hacemos para toda las aplicacion.
+   Las configuraciones a nivel WAF adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicacion f5app) o en un `location` especifico. En este caso lo hacemos para toda la aplicacion.
 
    Como requisito, el modulo de WAF debe estar cargado a NGINX, esto lo hicimos en un paso anterior agreagando la directiva `load_module` en `nginx.conf`
 
@@ -687,7 +687,7 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
        keepalive 16;
        zone backend 64k;
        server 10.1.1.6:8080;
-       #server 10.1.1.6:8090;
+       server 10.1.1.6:8090;
        #sticky cookie helloworld expires=1h domain=.example.com path=/;  ## SESSION PERSISTENCE
    }
    ```
@@ -696,12 +696,12 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
   ```
   sudo nginx -s reload
   ```
-  Validar configuracion:\
+  Validar configuracion:
   ```
   sudo nginx -t
   ```
 
-  Probar desde el browser **http://f5app.example.com**
+  Probar desde el browser **http://f5app.example.com**\
   Hacer algunas simulaciones de ataques a la aplicacion, <mark>y tomar nota del SupportID</mark>
     - Adicionar al path un XSS `http://f5app.example.com/<script>`
     - Adicionar al path un SQLi `http://f5app.example.com/?a='or 1=1#'`
@@ -710,7 +710,8 @@ Ahora procederemos a crear todos los archivos de configuracion del WAF y activar
   En Grafana validar logs del WAF:\
   Ir a **http://grafana.example.com:3000** y ver los Dashboards Attack Signatures, Main Dashboard y SupportIDs\
   ![Grafana Dashboars](./grafana1.png)
-
+  
+  ![Grafana Dashboars](./grafana2.png)
 
 ### 5. Auth con OpenID Connect (OIDC)
 NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicacion o el backend.\
