@@ -667,9 +667,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    ]
    ```
 - Como ultimo paso, activamos el WAF para la aplicación `f5app`, editando el archivo `/etc/nginx/conf.d/f5app.example.com.conf`
-   ```
-   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
-   ```
+
    Las configuraciones a nivel WAF adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicación f5app) o en un `location` especifico. En este caso lo hacemos para toda la aplicación.
 
    Como requisito, el modulo de WAF debe estar cargado a NGINX, esto lo hicimos en un paso anterior agregando la directiva `load_module` en `nginx.conf`
@@ -678,6 +676,17 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    `app_protect_security_log_enable on;` Activa logs para el WAF.\
    `app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;` Indica el formato a usar para los logs de WAF y el destino. Puede usarse multiples veces para hacer logs a varios destinos.\
    `app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";` Indica la politica de WAF a usar.
+
+   Las lineas que se adicionan a la configuracion en el bloque `server` son:
+   ```
+   app_protect_enable on;
+   app_protect_security_log_enable on;
+   app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;
+   app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";
+   ```
+   ```
+   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
+   ```
 
    El archivo `f5app.example.com.conf` queda de la siguiente manera:
    ```
