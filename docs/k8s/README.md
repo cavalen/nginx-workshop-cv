@@ -1,1 +1,412 @@
-Instrucciones Lab NGINX Ingress Controller
+# Instrucciones Lab NGINX Ingress Controller
+
+## 1. Prerequisitos
+
+**Nota:** La instalacion y la configuracion de NGINX Ingress Controller se realizar por linea de comandos usando `kubectl` y manifiestos en formato YAML.
+Se recomienda tener alguna experiencia en el CLI de Linux y Kubernetes.
+
+En la guia se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
+
+**Nota:** En la linea de comandos hay un alias para `kubectl`. Los comandos de la guia se haran con el alias `k`
+
+**IMPORTANTE:** Los pasos de configuracion de esta guia se hacen sobre el servidor `jumphost`, que es el servidor RDP. No hay necesidad de hacer SSH a otro equipo para esta seccion del Lab.
+
+Abrir la consola del Jumphost y clonar el repositorio del Lab
+```
+git clone https://github.com/cavalen/nginx-workshop-cv/
+```
+```
+cd nginx-workshop-cv/k8s
+```
+
+
+## 2. Instalacion K8s Ingress via Helm
+
+- Instalar Helm
+  ```
+  helm repo add nginx-stable https://helm.nginx.com/stable
+  ```
+  ```
+  helm repo update
+  ```
+- Instalar NGINX Ingress Controller via Helm
+  
+  Es necesario crear un ConfigMap donde se especifique el resolver de DNS y unas configuraciones adicionales necesarias para OIDC en entornos donde hay mas de una replica del Ingress Controller.
+
+  ```
+  export DNSSVC=$(kubectl get svc -n kube-system kube-dns -o=jsonpath="{.spec.clusterIP}")
+  ```
+  ```
+  export CONFIGMAP_DATA=$(cat <<EOF
+  resolver 10.43.0.10 valid=5s;
+  server {
+    listen 12345;
+    zone_sync;
+    zone_sync_server nginx-ingress-headless.nginx-ingress.svc.cluster.local:12345 resolve;
+  }
+  EOF
+  )
+  ```
+
+  ```
+  helm install nginx-ingress nginx-stable/nginx-ingress \
+    --namespace=nginx-ingress \
+    --create-namespace \
+    --set controller.kind=deployment \
+    --set controller.replicaCount=1 \
+    --set controller.image.repository=cavalen/nginx-ingress \
+    --set controller.image.tag=3.5.0 \
+    --set controller.image.pullPolicy=IfNotPresent \
+    --set controller.nginxplus=true \
+    --set controller.appprotect.enable=true \
+    --set controller.appprotectdos.enable=false \
+    --set controller.ingressClass.create=true \
+    --set controller.ingressClass.name="nginx-ingress" \
+    --set controller.enableCustomResources=true \
+    --set controller.enableSnippets=true \
+    --set controller.enableTLSPassthrough=true \
+    --set controller.enableOIDC=true \
+    --set controller.healthStatus=true \
+    --set controller.nginxStatus.enable=true \
+    --set controller.nginxStatus.port=8080 \
+    --set controller.nginxStatus.allowCidrs="0.0.0.0/0" \
+    --set controller.service.name="nginx-ingress" \
+    --set controller.service.type=LoadBalancer \
+    --set controller.service.httpPort.nodePort=30080 \
+    --set controller.service.httpsPort.nodePort=30443 \
+    --set controller.enableLatencyMetrics=true \
+    --set prometheus.create=true \
+    --set prometheus.port=9113 \
+    --set serviceInsight.create=true \
+    --set serviceInsight.port=9114 \
+    --set controller.config.entries."resolver-addresses"="$DNSSVC" \
+    --set controller.config.entries."resolver-valid"="5s" \
+    --set controller.config.entries."stream-snippets=$CONFIGMAP_DATA" \
+    --set "controller.service.customPorts[0].name"=insight \
+    --set "controller.service.customPorts[0].nodePort"=30914 \
+    --set "controller.service.customPorts[0].port"=9114 \
+    --set "controller.service.customPorts[0].targetPort"=9114 \
+    --set "controller.service.customPorts[0].protocol"=TCP
+  ```
+  Este comando despliega un ingress llamado `nginx-ingress`\
+  Algunas de las opciones del comando son:\
+  `namespace=nginx-ingress` Instala sobre el namespace nginx-ingress y lo crea si no existe
+  `controller.kind=deployment` Crea un despliegue tipo `Deployment`, la otra opcion es `DaemonSet`\
+  `controller.replicaCount` Numero de replicas del Deploy del Ingress.\
+  `controller.image.repository` Indica el repositorio donde se obtiene la imagen del Ingress\
+  `--set controller.nginxplus` Indica que se usara NGINX Plus como Ingress, en lugar de NGINX OSS\
+  `controller.appprotect.enable` Indica que se utilizara el WAF\
+  `controller.enableCustomResources` Indica que se utilizaran los CRDs de Nginx\
+  `controller.enableOIDC` Indica que la integracion con OIDC estara disponible\
+  ... FALTA !!!!!!!!!!!!!!!
+
+  Validar que el despliegue es correcto y el Ingress esta corriendo con el comando:
+  ```
+  k get pod,svc -n nginx-ingress
+  ```
+  ![Ingress-Install](./ingress-install.png)
+
+## 3. Instalar App BREWZ
+
+```
+kubectl create ns brewz
+```
+```
+k apply -f mongo-init.yaml -n brewz
+```
+```
+k apply -f brewz-secret.yaml -n brewz
+```
+```
+k apply -f brewz.yaml -n brewz
+```
+```
+k get svc,pod -n brewz
+```
+![Brewz-Install](./brewz1.png)
+
+## 4. Publicar un Ingress (Virtual Server)
+
+```
+k apply -f 1-virtualserver-brewz.yaml -n brewz
+```
+```
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: brewz
+  namespace: brewz
+  annotations:
+    version : "1. Basic Virtual Server"
+spec:
+  host: brewz.example.com
+  tls:
+    secret: brewz-secret
+  upstreams:
+    - name: spa
+      service: spa
+      port: 8080
+      lb-method: round_robin
+    - name: api
+      service: api
+      port: 8000
+    - name: inventory
+      service: inventory
+      port: 8002
+    - name: recommendations
+      service: recommendations
+      port: 8001
+    - name: spa-dark
+      service: spa-dark
+      port: 8080
+  routes:
+    - path: /
+      action:
+        pass: spa
+    - path: /api
+      action:
+        pass: api
+    - path: /api/inventory
+      action:
+        proxy:
+          upstream: inventory
+          rewritePath: /api/inventory
+    - path: /images
+      action:
+        proxy:
+          upstream: api
+          rewritePath: /images
+    - path: /api/recommendations
+      action:
+        proxy:
+          upstream: recommendations
+          rewritePath: /api/recommendations
+```
+Validar:
+```
+k get vs -n brewz
+```
+![Virtual-Server1](./vs1.png)
+
+Probar la app en el Browser en **https://brewz.example.com**\
+No tiene seguridad, solo se esta exponiendo la app
+
+## 4. HealtChecks Activos
+
+Antes de hacer cambios al Ingress, simulamos un fallo en la aplicacion (ej, responder con un 200 OK pero no lo que la aplicacion debe responder)
+
+Para esto entramos por SSH al POD del frontend (spa) y editamos el web server:
+```
+POD=$(kubectl get pod -n brewz -o custom-columns=:.metadata.name | grep spa | head -1); echo $POD
+```
+Este comando nos pone en un shell en el pod `spa` de Brewz
+```
+kubectl exec -it -n brewz $POD -- sh
+```
+Editar Web Server:
+```
+cat <<EOF > /tmp/index.html
+<html>
+ <body>
+   <center>
+     <h1> BREWZ is not feeling well ...</h1><p>
+     <img src=https://raw.githubusercontent.com/cavalen/acme/master/beer-broken.jpg>
+   </center>
+ </body>
+</html>
+EOF
+```
+Aplicar cambios y reiniciar el Web Server del POD:
+```
+sed -i 's/\/usr\/share\/nginx\/html;/\/tmp;/g' /etc/nginx/nginx.conf
+nginx -s reload
+exit
+```
+Ir a **https://brewz.example.com**\
+La aplicacion claramente esta respondiendo, pero no lo que esperamos.
+
+Adicionaremos un Health-check al Ingress para detectar este tipo de fallas, mas alla de un codigo de respuesta HTTP 500 del POD.\
+El cambio de la configuracion respecto al anterior consiste 2 bloques, el primero espera del POD una respuesta 200 OK y la cadena "Brewz".\
+Si encuentra las 2 cosas en la respuesta se marca el POD como disponible.
+```
+  http-snippets: |
+    match brewzhealthcheck {
+      status 200;
+      body ~ "Brewz";
+    }
+```
+El segundo cambio consiste en aplicar el Health check al URL `/`, validando cada 5 segundos
+```
+    - path: /
+      location-snippets: |
+        health_check match=brewzhealthcheck interval=5s uri=/;
+```
+El manifiesto completo se ve asi:
+```
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: brewz
+  namespace: brewz
+  annotations:
+    version : "2. Active Health Check"
+spec:
+  host: brewz.example.com
+  tls:
+    secret: brewz-secret
+  http-snippets: |
+    match brewzhealthcheck {
+      status 200;
+      body ~ "Brewz";
+    }
+  upstreams:
+    - name: spa
+      service: spa
+      port: 8080
+      lb-method: round_robin
+    - name: api
+      service: api
+      port: 8000
+    - name: inventory
+      service: inventory
+      port: 8002
+    - name: recommendations
+      service: recommendations
+      port: 8001
+    - name: spa-dark
+      service: spa-dark
+      port: 8080
+  routes:
+    - path: /
+      location-snippets: |
+        health_check match=brewzhealthcheck interval=5s uri=/;
+      action:
+        pass: spa
+    - path: /api
+      action:
+        pass: api
+    - path: /api/inventory
+      action:
+        proxy:
+          upstream: inventory
+          rewritePath: /api/inventory
+    - path: /images
+      action:
+        proxy:
+          upstream: api
+          rewritePath: /images
+    - path: /api/recommendations
+      action:
+        proxy:
+          upstream: recommendations
+          rewritePath: /api/recommendations
+```
+Aplicamos el manifiesto con Health Checks:
+```
+k apply -f 2-virtualserver-brewz.yaml -n brewz
+```
+
+Probar el Health Check:
+
+Ir a **https://brewz.example.com**
+
+Como editamos el POD del Aplicativo y el Health Check busca la cadena "Brewz" y  no la encuentra, el Ingress responde con un codigo de error HTTP/502 (no hay PODs disponibles en el Backend)
+
+![502 Error](./brewz-502.png)
+
+## 5. Manejo de Errores
+
+En este escenario buscamos que el Ingress intercepte este error 502 y no lo presente al usuario, sino que reponda con algun contenido. Esto se logra por medio de una directiva llamada `errorPages`
+
+Se adiciona a la configuración existente esta directiva, interceptando errores 502 y 503 y respondiendo con un contenido estatico. 
+```
+      errorPages:
+      - codes: [502, 503]
+        return:
+          code: 218
+          body: "<center><h1>Tenemos inconvenientes tecnicos y estamos trabajando para solucionarlo ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
+
+```
+
+Revisemos el manifiesto completo que hace esto:
+```
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: brewz
+  namespace: brewz
+  annotations:
+    version : "3. Errors & responses"
+spec:
+  host: brewz.example.com
+  tls:
+    secret: brewz-secret
+  http-snippets: |
+    match brewzhealthcheck {
+      status 200;
+      body ~ "Brewz";
+    }
+  upstreams:
+    - name: spa
+      service: spa
+      port: 8080
+      lb-method: round_robin
+    - name: api
+      service: api
+      port: 8000
+    - name: inventory
+      service: inventory
+      port: 8002
+    - name: recommendations
+      service: recommendations
+      port: 8001
+    - name: spa-dark
+      service: spa-dark
+      port: 8080
+  routes:
+    - path: /
+      location-snippets: |
+        health_check match=brewzhealthcheck interval=5s uri=/;
+      errorPages:
+      - codes: [502, 503]
+        return:
+          code: 218
+          body: "<center><h1>Tenemos inconvenientes tecnicos y estamos trabajando para solucionarlo ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
+      action:
+        pass: spa
+    - path: /api
+      action:
+        pass: api
+    - path: /api/inventory
+      action:
+        proxy:
+          upstream: inventory
+          rewritePath: /api/inventory
+    - path: /images
+      action:
+        proxy:
+          upstream: api
+          rewritePath: /images
+    - path: /api/recommendations
+      action:
+        proxy:
+          upstream: recommendations
+          rewritePath: /api/recommendations
+```
+Aplicamos los cambios:
+```
+k apply -f 3-virtualserver-brewz.yaml -n brewz
+```
+Volver a **https://brewz.example.com**\
+Validar el mensaje de error, ahora modificado por el Ingress
+
+Por ultimo, eliminar el POD "fallido"\
+```
+k delete pod $POD -n brewz
+```
+
+## 6. Web Application Firewall (WAF)
+
+El siguiente paso en el camino a mejorar la experiencia del usuario y la seguridad de la aplicacion Brewz es activar seguridad en L7 por medio del WAF.
+
+Aplicamos una politica de WAF a las rutas `/` y `/api`
