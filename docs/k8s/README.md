@@ -398,7 +398,8 @@ Aplicamos los cambios:
 ```
 k apply -f 3-virtualserver-brewz.yaml -n brewz
 ```
-Volver a **https://brewz.example.com**\
+Volver a **https://brewz.example.com**
+
 Validar el mensaje de error, ahora modificado por el Ingress
 
 Por ultimo, eliminar el POD "fallido"\
