@@ -336,14 +336,14 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   ```
   Vamos a adicionar estas directivas a la configuración:
   ```
-          add_header X-ServerIP $server_addr;
-          add_header X-srv-hostname $hostname;
+  add_header X-ServerIP $server_addr;
+  add_header X-srv-hostname $hostname;
 
-          proxy_set_header X-Client-IP $remote_addr;
-          proxy_set_header X-Hola "Mundo";
+  proxy_set_header X-Client-IP $remote_addr;
+  proxy_set_header X-Hola "Mundo";
   ```
 
-  El archivo de configuración echo.example.com.conf debe quedar como este:
+  El archivo de configuración `echo.example.com.conf` debe quedar como este:
   ```
   server {
       listen 443 ssl;
@@ -369,7 +369,9 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   `add_header` Adiciona headers a la respuesta del server\
   `proxy_set_header` Adiciona headers al request que se envia al server\
   
-  El parámetro `$server_addr` es una variable interna de nginx. El listado de variables se pueden consultar en la documentación en **http://nginx.org/en/docs/http/ngx_http_core_module.html#variables** 
+  Los parámetros `$server_addr`, `$hostname`, `$remote_addr` son variables internas de nginx. El listado de variables se pueden consultar en la documentación en **http://nginx.org/en/docs/http/ngx_http_core_module.html#variables** 
+
+  **NOTA:** Los headers adicionados en la respuesta del server (add_header) se pueden ver usando la herramienta "Developer Tools" del Browser, recargando al aplicacion `echo`.
 
 ---
 
