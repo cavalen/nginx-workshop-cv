@@ -689,7 +689,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    ```
 
    El archivo `f5app.example.com.conf` queda de la siguiente manera:
-   ```
+   ```nginx
    # Custom Health Check
    match f5app_health {
        status 200;
@@ -768,7 +768,7 @@ Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com**
   ```
   sudo vim /etc/nginx/conf.d/oidc.example.com.conf
   ```
-  ```
+  ```nginx
   server {
       listen 443 ssl;
       server_name oidc.example.com;
@@ -797,13 +797,13 @@ Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com**
 - Descargar el software desde GitHub.\
   Hay un branch recomendado para cada version de NGINX Plus, por ejemplo para NGINX Plus R31 el comando git debe especificar el branch adecuado (ej, `git clone -b R31 <REPO>`)\
 En este caso descargaremos la ultima version (latest)
-  ```
+  ```sh
   git clone https://github.com/nginxinc/nginx-openid-connect
   ```
-  ```
+  ```sh
   cd nginx-openid-connect
   ```
-  ```
+  ```sh
   ./configure.sh -x -h oidc.example.com -k request -i nginx-plus -s 1234567890ABCDEF http://keycloak.example.com/realms/master/.well-known/openid-configuration
   ```
   `-h` indica el FQDN del IdP\
@@ -819,11 +819,11 @@ En este caso descargaremos la ultima version (latest)
   Solo es necesario editar la directiva `resolver` al comienzo del archivo.\
   Como estamos usando el dominio de pruebas `example.com` este no resuelve con el DNS publico por defecto que utiliza el script (8.8.8.8) y debemos indicar la dirección IP del servicio DNS interno `127.0.0.53`.
 
-  ```
+  ```sh
   sudo vim openid_connect.server_conf
   ```
-  El archivo final queda asi:
-  ```
+  El archivo final `openid_connect.server_conf` queda asi:
+  ```nginx
       # Advanced configuration START
     set $internal_error_message "NGINX / OpenID Connect login failure\n";
     set $pkce_id "";
@@ -929,7 +929,7 @@ En este caso descargaremos la ultima version (latest)
   El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` nos puede ayudar en esta validación:
   ![Keycloak3](./keycloak3.png)
 
-  ```
+  ```sh
   sudo vim openid_connect.server_conf
   ```
   Los valores importantes a configurar están en las directivas `map` del archivo
@@ -941,11 +941,11 @@ En este caso descargaremos la ultima version (latest)
   | `$host $oidc_client` | `oidc.example.com nginx-plus;` |
   | `$oidc_client_secret` | `oidc.example.com 1234567890ABCDEF;` |
 
-  ```
+  ```sh
   sudo vim openid_connect_configuration.conf
   ```
-  El archivo final queda asi:
-  ```
+  El archivo final `openid_connect_configuration.conf` queda asi:
+  ```nginx
   # OpenID Connect configuration
   #
   # Each map block allows multiple values so that multiple IdPs can be supported,
@@ -1084,19 +1084,19 @@ En este caso descargaremos la ultima version (latest)
   # vim: syntax=nginx
   ```
 - Copiar archivos generados por el script a la carpeta de nginx, donde están la configuración de la app a la que vamos a integrar autenticación.
-  ```
+  ```sh
   sudo cp openid_connect* /etc/nginx/conf.d/
   ```
 - Editar aplicación Web para integrar OIDC
-  
+
   En uno de los primeros pasos de la configuración de OIDC, creamos un archivo para el sitio `oidc.example.com`. Ahora debemos editarlo para incluir lo que el script de configuración creo y lo que hemos editado de forma manual.
 
   El script crea un archivo llamado `frontend.conf`, este archivo no es necesario, pero muestra las directivas que debe tener una aplicación para hacer la integración de OIDC y se usa como ejemplo de configuración.
 
-  ```
+  ```sh
   sudo vim /etc/nginx/conf.d/oidc.example.com.conf
   ```
-  ```
+  ```nginx
   # Custom log format to include the 'sub' claim in the REMOTE_USER field
   log_format main_jwt '$remote_addr - $jwt_claim_sub [$time_local] "$request" $status '
                       '$body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"';
@@ -1145,7 +1145,7 @@ En este caso descargaremos la ultima version (latest)
   }
   ```
   Recargamos la configuración de Nginx.
-  ```
+  ```sh
   sudo nginx -s reload
   ```
   Validamos en un browser en **https://oidc.example.com**\
