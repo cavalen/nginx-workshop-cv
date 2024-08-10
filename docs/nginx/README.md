@@ -16,8 +16,9 @@ Se recomienda tener alguna experiencia en el CLI de Linux.
 
 En la guía se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
 
-<mark>IMPORTANTE: Los pasos de configuración de esta guía se hacen sobre el servidor `nginx`\
-Usuario `ubuntu` con password `HelloUDF`</mark>
+> [!NOTE]
+> <mark>IMPORTANTE: Los pasos de configuración de esta guía se hacen sobre el servidor `nginx`\
+>  Usuario `ubuntu` con password `HelloUDF`</mark>
 ```
 ssh ubuntu@10.1.1.7
 ```
