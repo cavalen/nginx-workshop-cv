@@ -39,3 +39,5 @@ El laboratorio cuenta con:
 ### [Parte 1: Laboratorio NGINX Plus](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/nginx#instrucciones-lab-nginx-plus)
 
 ### [Parte 2: Laboratorio NGINX Ingress Controller](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/k8s)
+
+Nota: El BP de UDF es "NGINX Workshop - CV"
