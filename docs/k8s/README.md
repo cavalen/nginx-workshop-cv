@@ -47,7 +47,7 @@ cd nginx-workshop-cv/k8s
   ```
   ```
   export CONFIGMAP_DATA=$(cat <<EOF
-  resolver 10.43.0.10 valid=5s;
+  #resolver 10.43.0.10 valid=5s;
   server {
     listen 12345;
     zone_sync;

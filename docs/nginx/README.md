@@ -211,6 +211,7 @@ Y son los pasos que seguiremos a continuación:
   Probar desde el browser en **http://dashboard.example.com:8080**
 
   ![NGINX Dashboard](./nginx-dashboard.png)
+  El Dashboard aun no presenta información reelevante pues no hay configuda aún una aplicación en NGINX.
  ---
 ### 3. Archivos de Configuración
 Los archivos de configuración de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d/` y que cada sitio tenga un archivo `.conf` propio, con un nombre significativo, por ejemplo `api.misitio.com.conf`
@@ -260,10 +261,10 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   ![f5app](./f5app.png)
 
   La App solo esta expuesta a traves del reverse-proxy, pero no esta protegida:
-  - ir a Demos > Credit Cards
-  - Correr un XSS - `http://f5app.example.com/<script>`
+  - ir a Demos > Credit Cards --> El servidor expone información sensible.
+  - Correr un XSS - `http://f5app.example.com/<script>Danger!</script>` (retorna un 404, mas sin embargo el servidor procesa el request)
 
-  Validar el Dashboard de NGINX que ya podemos ver información sobre f5app, su estado de salud y monitores en **http://dashboard.example.com:8080**
+  Validar en el Dashboard de NGINX que ya podemos ver información sobre f5app, su estado de salud y monitores en **http://dashboard.example.com:8080**
 
   Realicemos una modificacion al Heath-Check:
   ```sh
@@ -284,7 +285,8 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   En el Dashboard de NGINX podemos ver también los health checks realizados y el estado del servidor
   ![Dashboard f5app](./f5app-dashboard.png)
 
-  ### <mark>**Reversar los cambios en el Health Check y recargamos la configuración de nginx antes de continuar**</mark>
+  > [!NOTE]
+  > ### <mark>**Reversar los cambios en el Health Check y recargamos la configuración de nginx antes de continuar**</mark>
     ```
   match f5app_health {
       status 200;
@@ -737,7 +739,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
   Probar desde el browser **http://f5app.example.com**
 
   Hacer algunas simulaciones de ataques a la aplicación, <mark>y tomar nota del SupportID</mark>
-    - Adicionar al path un XSS `http://f5app.example.com/<script>`
+    - Adicionar al path un XSS `http://f5app.example.com/<script>Danger!</script>`
     - Adicionar al path un SQLi `http://f5app.example.com/?a='or 1=1#'`
     - Navegar en la aplicacion al menu Demos > CC Numbers y validar que la configuración de DataGuard ofusca información sensible.
 
