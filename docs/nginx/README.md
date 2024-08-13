@@ -10,7 +10,7 @@
 [5. Auth con OpenID Connect (OIDC)](#5-auth-con-openid-connect-oidc)
 
 
-### 1. Instalación Nginx Plus
+## 1. Instalación Nginx Plus
 Nota: La instalación y la configuración de NGINX Plus se realizar por linea de comandos y editando archivos de configuración de texto.\
 Se recomienda tener alguna experiencia en el CLI de Linux.
 
@@ -77,7 +77,7 @@ Y son los pasos que seguiremos a continuación:
   sudo rm /etc/nginx/conf.d/default.conf
   ```
 
-### 2. Configuración base de nginx
+## 2. Configuración base de nginx
 - Editar el archivo `/etc/nginx/nginx.conf` para cargar los módulos de WAF y NJS\
   `load_module modules/ngx_http_app_protect_module.so;`\
   `load_module modules/ngx_http_js_module.so;`\
@@ -213,7 +213,7 @@ Y son los pasos que seguiremos a continuación:
   ![NGINX Dashboard](./nginx-dashboard.png)
   El Dashboard aun no presenta información reelevante pues no hay configuda aún una aplicación en NGINX.
  ---
-### 3. Archivos de Configuración
+## 3. Archivos de Configuración
 Los archivos de configuración de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d/` y que cada sitio tenga un archivo `.conf` propio, con un nombre significativo, por ejemplo `api.misitio.com.conf`
 
 - ### Crear configuración de la primera App - *f5app.example.com*
@@ -380,7 +380,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
 
 ---
 
-### 4. Web Application Firewall (WAF)
+## 4. Web Application Firewall (WAF)
 NGINX App Protect (v4) utiliza archivos en formato JSON para la definición de la política de seguridad declarativa. Estos archivos pueden estar en cualquier ubicación en el filesystem, para este Lab los colocaremos en la ruta `/etc/nginx/waf/`
 
 También es posible tener la política como un archivo binario llamado "policy bundle" que se compila por medio de un software llamado [NGINX App Protect Policy Compiler](https://docs.nginx.com/nginx-app-protect-waf/v5/admin-guide/compiler/), pero para este Lab usaremos los archivos JSON
@@ -749,7 +749,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
 
   ![Grafana Dashboars](./grafana2.png)
 
-### 5. Auth con OpenID Connect (OIDC)
+## 5. Auth con OpenID Connect (OIDC)
 NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicación o el backend.\
 Esta integración es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.
 

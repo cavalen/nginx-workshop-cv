@@ -7,7 +7,8 @@
 [4. HealtChecks Activos](#4-healtchecks-activos)\
 [5. Manejo de Errores](#5-manejo-de-errores)\
 [6. Web Application Firewall (WAF)](#6-web-application-firewall-waf)\
-[7. Integración IdP con OIDC](#7-integración-idp-con-oidc)
+[7. JWT Auth](#7-jwt-auth)\
+[8. Integración IdP con OIDC](#8-integración-idp-con-oidc)
 
 ## 1. Pre-requisitos
 
@@ -18,7 +19,19 @@ En la guía se utilizará `vim` para crear y modificar los archivos de configura
 
 **Nota:** En la linea de comandos hay un alias para `kubectl`. Los comandos de la guía se harán con el alias `k`
 
-**IMPORTANTE:** Los pasos de configuración de esta guía se hacen sobre el servidor `jumphost`, que es el servidor RDP. No hay necesidad de hacer SSH a otro equipo para esta sección del Lab.
+> [!NOTE]
+> **IMPORTANTE:** Los pasos de configuración de esta guía se hacen sobre el servidor `ubuntu-desktop`, que es el servidor RDP. No hay necesidad de hacer SSH a otro equipo para esta sección del Lab.
+
+> [!NOTE]
+> Copiar y Pegar entre el servidor `ubuntu-desktop` y el equipo local puede resultar en errores de formato del texto copiado, lo que se traducen en errores a la hora de desplegar las configuraciones.
+>
+> 
+> Se recomienda una ejecutar el laboratorio en su totalidad desde el RDP `ubuntu-desktop` (guia + CLI) o usar la opcion de UDF de WebShell al servidor `ubuntu-desktop` y seguir la guia desde el PC local.
+> 
+
+Hay 2 maneras de ejecutar el laboratorio:
+1. Haciendo RDP al servidor `ubuntu-desktop` y 
+
 
 Abrir la consola del Jumphost y clonar el repositorio del Lab
 ```
@@ -81,8 +94,6 @@ cd nginx-workshop-cv/k8s
     --set controller.nginxStatus.allowCidrs="0.0.0.0/0" \
     --set controller.service.name="nginx-ingress" \
     --set controller.service.type=LoadBalancer \
-    --set controller.service.httpPort.nodePort=30080 \
-    --set controller.service.httpsPort.nodePort=30443 \
     --set controller.enableLatencyMetrics=true \
     --set prometheus.create=true \
     --set prometheus.port=9113 \
@@ -97,17 +108,18 @@ cd nginx-workshop-cv/k8s
     --set "controller.service.customPorts[0].targetPort"=9114 \
     --set "controller.service.customPorts[0].protocol"=TCP
   ```
-  Este comando despliega un ingress llamado `nginx-ingress`\
-  Algunas de las opciones del comando son:\
-  `namespace=nginx-ingress` Instala sobre el namespace nginx-ingress y lo crea si no existe
-  `controller.kind=deployment` Crea un despliegue tipo `Deployment`, la otra opcion es `DaemonSet`\
-  `controller.replicaCount` Numero de replicas del Deploy del Ingress.\
-  `controller.image.repository` Indica el repositorio donde se obtiene la imagen del Ingress\
-  `--set controller.nginxplus` Indica que se usara NGINX Plus como Ingress, en lugar de NGINX OSS\
-  `controller.appprotect.enable` Indica que se utilizara el WAF\
-  `controller.enableCustomResources` Indica que se utilizaran los CRDs de Nginx\
-  `controller.enableOIDC` Indica que la integración con OIDC estará disponible\
-  ... FALTA !!!!!!!!!!!!!!!
+  Este comando despliega un ingress llamado `nginx-ingress`
+
+  > Algunas de las opciones del comando son:\
+  > `namespace=nginx-ingress` Instala sobre el namespace nginx-ingress y lo crea si no existe
+  > `controller.kind=deployment` Crea un despliegue tipo `Deployment`, la otra opcion es `DaemonSet`\
+  > `controller.replicaCount` Numero de replicas del Deploy del Ingress.\
+  > `controller.image.repository` Indica el repositorio donde se obtiene la imagen del Ingress\
+  > `controller.nginxplus` Indica que se usara NGINX Plus como Ingress, en lugar de NGINX OSS\
+  > `controller.appprotect.enable` Indica que se utilizara el WAF\
+  > `controller.enableCustomResources` Indica que se utilizaran los CRDs de Nginx\
+  > `controller.enableOIDC` Indica que la integración con OIDC estará disponible\
+  > `controller.nginxStatus.enable` Activa el dashboard de NGINX Plus
 
   Validar que el despliegue es correcto y el Ingress esta corriendo con el comando:
   ```
@@ -693,7 +705,7 @@ Adicionar al path un XSS `https://brewz.example.com/<script>`\
 Adicionar al path un SQLi `https://brewz.example.com/?param='or 1=1#'`
 
 
-## 6. JWT Auth
+## 7. JWT Auth
 
 Aplicamos una política de JWT llamada `jwt-policy-brewz`
 
@@ -759,7 +771,7 @@ Probamos con un token válido, enviado en el Header *token*:
 curl -k -s -H "token: `cat jwt/token-good.jwt`" https://brewz.example.com/api/recommendations | jq
 ```
 
-## 7. Integración IdP con OIDC
+## 8. Integración IdP con OIDC
 
 Vamos a crear un nuevo endpoint `/admin` en el Ingress que responda con un contenido estático. A este endpoint le asociamos una política de OIDC llamada `oidc-policy-brewz` que pida credenciales validas a Keycloak antes de llevar al usuario a este endpoint.
 
