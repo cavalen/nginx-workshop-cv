@@ -704,6 +704,9 @@ Aplicamos las políticas de JWT, primero el secret, luego la "Policy"
 k apply -f jwt/1-jwt-secret.yaml -n brewz
 k apply -f jwt/2-jwt-policy.yaml -n brewz
 ```
+```
+k apply -f 5-virtualserver-brewz.yaml -n brewz
+```
 
 El archivo `jwt/1-jwt-secret.yaml` es básicamente un K8s-secret, donde se almacena el JSON Web Key. El JWK es una estructura en JSON que representa un set de llaves publicas, usadas para verificar el Token (JWT) creado por un authorization server.
 ```yaml
