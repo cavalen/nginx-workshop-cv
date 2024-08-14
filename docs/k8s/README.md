@@ -27,10 +27,8 @@ En la guía se utilizará `vim` para crear y modificar los archivos de configura
 >
 > 
 > Se recomienda una ejecutar el laboratorio en su totalidad desde el RDP `ubuntu-desktop` (guia + CLI) o usar la opcion de UDF de WebShell al servidor `ubuntu-desktop` y seguir la guia desde el PC local.
-> 
-
-Hay 2 maneras de ejecutar el laboratorio:
-1. Haciendo RDP al servidor `ubuntu-desktop` y 
+>
+> ![Webshell](./webshell.png)
 
 
 Abrir la consola del Jumphost y clonar el repositorio del Lab
