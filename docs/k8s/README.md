@@ -26,7 +26,7 @@ En la guía se utilizará `vim` para crear y modificar los archivos de configura
 > Copiar y Pegar entre el servidor `ubuntu-desktop` y el equipo local puede resultar en errores de formato del texto copiado, lo que se traducen en errores a la hora de desplegar las configuraciones.
 >
 > 
-> Se recomienda una ejecutar el laboratorio en su totalidad desde el RDP `ubuntu-desktop` (guia + CLI) o usar la opcion de UDF de WebShell al servidor `ubuntu-desktop` y seguir la guia desde el PC local.
+> Se recomienda ejecutar el laboratorio en su totalidad desde el RDP `ubuntu-desktop` (guia + CLI) o usar la opcion de UDF de WebShell al servidor `ubuntu-desktop` y seguir la guia desde el PC local.
 >
 > ![Webshell](./webshell.png)
 
@@ -118,6 +118,9 @@ cd nginx-workshop-cv/k8s
   > `controller.enableCustomResources` Indica que se utilizaran los CRDs de Nginx\
   > `controller.enableOIDC` Indica que la integración con OIDC estará disponible\
   > `controller.nginxStatus.enable` Activa el dashboard de NGINX Plus
+  > `serviceInsight.create` Activa la funcionalidad de Service Insight, que es una funcion para dar visibilidad del estado de salud de los servicios y pods.
+
+  
 
   Validar que el despliegue es correcto y el Ingress esta corriendo con el comando:
   ```
