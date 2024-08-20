@@ -25,6 +25,13 @@ ssh ubuntu@10.1.1.7
 Para validar que estemos en el servidor correcto, podemos fijarnos en el prompt de la linea de comandos `ubuntu@nginx ~`
 ![SSH Nginx](./ssh-nginx.png)
 
+> [!NOTE]
+> Remote Desktop y WebShell (UDF) pueden presentar dificultades a la hora de Copiar/Pegar el texto de los archivos de configuracion. Para editar los archivos de configuracion de NGINX usando vscode por SSH al servidor de NGINX, hacer doble click al acceso nginx.code-workspace en el escritorio del jumphost `ubuntu-desktop` y usar el password `HelloUDF`
+> 
+> ![vscode](./vscode-workspace.png)
+> 
+> ![vscode-root](./root-password.png)
+
 El flujo del despliegue se puede ver de esta forma
 ![Flujo Instalacion](./install-flow.png)
 Y son los pasos que seguiremos a continuación:
