@@ -17,9 +17,9 @@ Se recomienda colocar la calidad de colores a lo minimo para un mejor desempeño
 ## Descripcion del Entorno:
 
 El laboratorio cuenta con:
-- Un cliente Linux con RDP desde donde se haran todas las configuracions via Controla y las pruebas via Browser
+- Un cliente Linux con RDP desde donde se haran todas las configuracions via CLI y las pruebas via Browser
 - Un servidor Ubuntu con K3s, donde se hará el despliegue del Ingress Controller
-- Un servidor Ubuntu donde se instalará NGINX Plus
+- Un servidor Ubuntu donde se hara la instalación/configuración de NGINX Plus
 - Un servidor Ubuntu con Docker haciendo la labor de Application Server.
 
 ![Topologia](docs/topology-lab.png)
