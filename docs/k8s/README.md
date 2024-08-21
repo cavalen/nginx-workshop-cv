@@ -68,7 +68,8 @@ cd nginx-workshop-cv/k8s
   )
   ```
 
-Cambiar el valor de `controller.image.repository` por uno válido:
+- Editar el valor de `controller.image.repository` por uno válido, ej. controller.image.repository=myregistry/nginx-plus-ingress
+- Editar el valor de `controller.image.tag` por uno valido, ej. controller.image.tag=3.5.0
   ```sh
   helm install nginx-ingress nginx-stable/nginx-ingress \
     --namespace=nginx-ingress \
