@@ -304,7 +304,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   ![Dashboard f5app](./f5app-dashboard.png)
 
   > [!NOTE]
-  > ### <mark>**Reversar los cambios en el Health Check y recargamos la configuración de nginx antes de continuar**</mark>
+  > ### <mark>**Reversar los cambios en el Health Check (body = F5 K8S vLab) y recargar la configuración de nginx antes de continuar**</mark>
     ```
   match f5app_health {
       status 200;
@@ -316,7 +316,9 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   Como siguiente prueba, activaremos el LoadBalancing en Nginx.
   Para esto, quitamos el comentario `#` en del segundo `server` en el bloque `upstream f5app-backend` hacia el final del archivo y recargamos la configuración de nginx.
 
-  Probando desde el browser en **http://f5app.example.com** podemos notar por los colores del app, que ahora los request del cliente se envían hacia dos instancias del backend. También se puede validar en el Dashboard.
+  El algoritmo de balanceo por defecto es Round Robin 
+
+  Probando desde el browser en **http://f5app.example.com** podemos notar por los colores del app, que ahora los request del cliente se envían hacia dos instancias del backend. También se puede validar en el Dashboard que hay 2 servidores en el "upstream" de f5app.
 
 - ### Crear configuración de la segunda app - *echo.example.com*
   ```sh
@@ -394,7 +396,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   
   Los parámetros `$server_addr`, `$hostname`, `$remote_addr` son variables internas de nginx. El listado de variables se pueden consultar en la documentación en **http://nginx.org/en/docs/http/ngx_http_core_module.html#variables** 
 
-  **NOTA:** Los headers adicionados en la respuesta del server (add_header) se pueden ver usando la herramienta "Developer Tools" del Browser, recargando al aplicación `echo`.
+  **NOTA:** Los headers adicionados en la respuesta del server (add_header) se pueden ver usando la herramienta "Developer Tools" del Browser.
 
 ---
 

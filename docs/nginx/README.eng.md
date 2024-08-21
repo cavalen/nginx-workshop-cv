@@ -299,14 +299,14 @@ It is recommended to create independant configuration files (one per site) with 
   Reload the configuration with `sudo nginx -s reload` y test the application again.
   ![502 error](./f5app-502.png)
 
-  **What is happening?** The App does not work, this is expected, and the answer from NGINX is a `502 Bad Gateway` because there are no healthy upstreams (The string **"Workshop K8S vLab** is not found in the body)
+  **What is happening?** The App does not work, this is expected, and the answer from NGINX is `502 Bad Gateway` because there are no healthy upstreams (The string **"Workshop K8S vLab** is not found in the reponse body)
 
 
-  En el Dashboard de NGINX podemos ver también los health checks realizados y el estado del servidor
+  In the NGINX Plus Dashboard we can see the number of successful healthchecks and the upstream health.
   ![Dashboard f5app](./f5app-dashboard.png)
 
   > [!NOTE]
-  > ### <mark>**Reversar los cambios en el Health Check y recargamos la configuración de nginx antes de continuar**</mark>
+  > ### <mark>**Please reverse the changes to the health check (body = F5 K8S vLab) and reload NGINX configuration before continuing with the lab**</mark>
     ```
   match f5app_health {
       status 200;
@@ -315,16 +315,18 @@ It is recommended to create independant configuration files (one per site) with 
   ```
   #### Load Balancing:
 
-  Como siguiente prueba, activaremos el LoadBalancing en Nginx.
-  Para esto, quitamos el comentario `#` en del segundo `server` en el bloque `upstream f5app-backend` hacia el final del archivo y recargamos la configuración de nginx.
+  In the next step we are going to configure Load Balancing.
+  To do this, remove the comment `#` from the second `server` inside the block `upstream f5app-backend`, towards the end of the file. Finally reload NGINX configuration. 
+  
+  The default Load Balancing method is Round Robin.
 
-  Probando desde el browser en **http://f5app.example.com** podemos notar por los colores del app, que ahora los request del cliente se envían hacia dos instancias del backend. También se puede validar en el Dashboard.
+  Test from the browser - **http://f5app.example.com**. Note how the app now is pulling content from 2 different upstream servers (in 2 different colors). If you check the NGINX Plus Dashboad now there are 2 upstream servers in the f5app application.
 
-- ### Crear configuración de la segunda app - *echo.example.com*
+- ### Create configuration for the second App - *echo.example.com*
   ```sh
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
-  El archivo de configuración `echo.example.com.conf` debe quedar como este:
+  The configuration file `echo.example.com.conf` should loook like this:
   ```nginx
   server {
       listen 443 ssl;
@@ -341,25 +343,25 @@ It is recommended to create independant configuration files (one per site) with 
       }
   }
   ```
-  Nótese como esta segunda aplicación usa terminación TLS en nginx, y no utiliza un bloque de `upstream` dentro de la configuración, sino que directamente está enviando el request a un backend existente sin hacer balanceo.
+  Note in the configuration how this second application is using TLS termination in the NGINX proxy. Another thing to notice is that there is no `upstream` block in the configureation, and the traffic is being proxied directly to an existing backend and is not doing Load Balancing.
 
-  Recargar la configuración de nginx:
+Reload NGINX configuration:
   ```sh
   sudo nginx -s reload
   ```
 
-  Probar desde el browser **https://echo.example.com**
+  Test from the browser - **https://echo.example.com**
 
-  Esta es una aplicación sencilla que muestra información sobre el request en formato json.
+  This is a simple application that show information from the request (including Headers) in JSON format.
 
   ![echo](./echo.png)
 
-  Configuremos ahora *"header insertion"*, ya que esta aplicación permite fácilmente ver los Headers.
+  Now let's configure *"header insertion"*, we should be able to see the new injected headers in the "echo" application..
 
   ```
   sudo vim /etc/nginx/conf.d/echo.example.com.conf
   ```
-  Vamos a adicionar estas directivas a la configuración:
+  Add this directives to the existing configuration inside the `location /` block:
   ```
   add_header X-ServerIP $server_addr;
   add_header X-srv-hostname $hostname;
@@ -368,7 +370,7 @@ It is recommended to create independant configuration files (one per site) with 
   proxy_set_header X-Hola "Mundo";
   ```
 
-  El archivo de configuración `echo.example.com.conf` debe quedar como este:
+  The configuration file `echo.example.com.conf` should look like this:
   ```nginx
   server {
       listen 443 ssl;
@@ -391,12 +393,12 @@ It is recommended to create independant configuration files (one per site) with 
       }
   }
   ```
-  `add_header` Adiciona headers a la respuesta del server\
-  `proxy_set_header` Adiciona headers al request que se envia al server\
+  `add_header` Adds a header to server's response\
+  `proxy_set_header` Adds a header to the customer request before sending to the upstream/backend server\
   
-  Los parámetros `$server_addr`, `$hostname`, `$remote_addr` son variables internas de nginx. El listado de variables se pueden consultar en la documentación en **http://nginx.org/en/docs/http/ngx_http_core_module.html#variables** 
+  The parameters `$server_addr`, `$hostname`, `$remote_addr` are internal NGINX variables. The full list of variables used by NGNIX is in the documentation - **http://nginx.org/en/docs/http/ngx_http_core_module.html#variables** 
 
-  **NOTA:** Los headers adicionados en la respuesta del server (add_header) se pueden ver usando la herramienta "Developer Tools" del Browser, recargando al aplicación `echo`.
+  **NOTE:** Reponse headers (add_header) can be seen using the Browser's Developer Tools.
 
 ---
 
