@@ -40,4 +40,4 @@ This lab includes:
 
 ### [Part 2: GINX Ingress Controller Lab](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/k8s)
 
-:white_check_mark: NOTE: UDF BluePrint is "NGINX Workshop - CV"
+:white_check_mark: **NOTE:** UDF BluePrint is [NGINX Workshop - CV](https://udf.f5.com/b/5d80a425-35e6-47fa-8753-bb7eedbd00ef#documentation)
