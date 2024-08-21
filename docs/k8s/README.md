@@ -42,77 +42,78 @@ cd nginx-workshop-cv/k8s
 
 ## 2. Instalación K8s Ingress via Helm
 
-- Instalar Helm
-  ```
-  helm repo add nginx-stable https://helm.nginx.com/stable
-  ```
-  ```
-  helm repo update
-  ```
-- Instalar NGINX Ingress Controller via Helm
+Instalar Helm:
+```
+helm repo add nginx-stable https://helm.nginx.com/stable
+```
+```
+helm repo update
+```
+
+Instalar NGINX Ingress Controller via Helm
   
-  Es necesario crear un ConfigMap donde se especifique el resolver de DNS y unas configuraciones adicionales necesarias para OIDC en entornos donde hay mas de una replica del Ingress Controller.
+Es necesario crear un ConfigMap donde se especifique el resolver de DNS y unas configuraciones adicionales necesarias para OIDC en entornos donde hay mas de una replica del Ingress Controller.
 
-  ```
-  export DNSSVC=$(kubectl get svc -n kube-system kube-dns -o=jsonpath="{.spec.clusterIP}")
-  ```
-  ```
-  export CONFIGMAP_DATA=$(cat <<EOF
-  #resolver 10.43.0.10 valid=5s;
-  server {
-    listen 12345;
-    zone_sync;
-    zone_sync_server nginx-ingress-headless.nginx-ingress.svc.cluster.local:12345 resolve;
-  }
-  EOF
-  )
-  ```
+```
+export DNSSVC=$(kubectl get svc -n kube-system kube-dns -o=jsonpath="{.spec.clusterIP}")
+```
+```
+export CONFIGMAP_DATA=$(cat <<EOF
+#resolver 10.43.0.10 valid=5s;
+server {
+  listen 12345;
+  zone_sync;
+  zone_sync_server nginx-ingress-headless.nginx-ingress.svc.cluster.local:12345 resolve;
+}
+EOF
+)
+```
 
-  > [!NOTE]
-  > Editar el valor de `controller.image.repository` por uno válido, ej. `controller.image.repository=myregistry/nginx-plus-ingress`
+> [!NOTE]
+> Editar el valor de `controller.image.repository` por uno válido, ej. `controller.image.repository=myregistry/nginx-plus-ingress`
 
-  > [!NOTE]
-  > Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0` 
+> [!NOTE]
+> Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0` 
 
-  ```sh
-  helm install nginx-ingress nginx-stable/nginx-ingress \
-    --namespace=nginx-ingress \
-    --create-namespace \
-    --set controller.kind=deployment \
-    --set controller.replicaCount=1 \
-    --set controller.image.repository=registry/repo \
-    --set controller.image.tag=3.5.0 \
-    --set controller.image.pullPolicy=IfNotPresent \
-    --set controller.nginxplus=true \
-    --set controller.appprotect.enable=true \
-    --set controller.appprotectdos.enable=false \
-    --set controller.ingressClass.create=true \
-    --set controller.ingressClass.name="nginx-ingress" \
-    --set controller.enableCustomResources=true \
-    --set controller.enableSnippets=true \
-    --set controller.enableTLSPassthrough=true \
-    --set controller.enableOIDC=true \
-    --set controller.healthStatus=true \
-    --set controller.nginxStatus.enable=true \
-    --set controller.nginxStatus.port=8080 \
-    --set controller.nginxStatus.allowCidrs="0.0.0.0/0" \
-    --set controller.service.name="nginx-ingress" \
-    --set controller.service.type=LoadBalancer \
-    --set controller.enableLatencyMetrics=true \
-    --set prometheus.create=true \
-    --set prometheus.port=9113 \
-    --set serviceInsight.create=true \
-    --set serviceInsight.port=9114 \
-    --set controller.config.entries."resolver-addresses"="$DNSSVC" \
-    --set controller.config.entries."resolver-valid"="5s" \
-    --set controller.config.entries."stream-snippets=$CONFIGMAP_DATA" \
-    --set "controller.service.customPorts[0].name"=insight \
-    --set "controller.service.customPorts[0].nodePort"=30914 \
-    --set "controller.service.customPorts[0].port"=9114 \
-    --set "controller.service.customPorts[0].targetPort"=9114 \
-    --set "controller.service.customPorts[0].protocol"=TCP
-  ```
-  Este comando despliega un ingress llamado `nginx-ingress`
+```sh
+helm install nginx-ingress nginx-stable/nginx-ingress \
+  --namespace=nginx-ingress \
+  --create-namespace \
+  --set controller.kind=deployment \
+  --set controller.replicaCount=1 \
+  --set controller.image.repository=registry/repo \
+  --set controller.image.tag=3.5.0 \
+  --set controller.image.pullPolicy=IfNotPresent \
+  --set controller.nginxplus=true \
+  --set controller.appprotect.enable=true \
+  --set controller.appprotectdos.enable=false \
+  --set controller.ingressClass.create=true \
+  --set controller.ingressClass.name="nginx-ingress" \
+  --set controller.enableCustomResources=true \
+  --set controller.enableSnippets=true \
+  --set controller.enableTLSPassthrough=true \
+  --set controller.enableOIDC=true \
+  --set controller.healthStatus=true \
+  --set controller.nginxStatus.enable=true \
+  --set controller.nginxStatus.port=8080 \
+  --set controller.nginxStatus.allowCidrs="0.0.0.0/0" \
+  --set controller.service.name="nginx-ingress" \
+  --set controller.service.type=LoadBalancer \
+  --set controller.enableLatencyMetrics=true \
+  --set prometheus.create=true \
+  --set prometheus.port=9113 \
+  --set serviceInsight.create=true \
+  --set serviceInsight.port=9114 \
+  --set controller.config.entries."resolver-addresses"="$DNSSVC" \
+  --set controller.config.entries."resolver-valid"="5s" \
+  --set controller.config.entries."stream-snippets=$CONFIGMAP_DATA" \
+  --set "controller.service.customPorts[0].name"=insight \
+  --set "controller.service.customPorts[0].nodePort"=30914 \
+  --set "controller.service.customPorts[0].port"=9114 \
+  --set "controller.service.customPorts[0].targetPort"=9114 \
+  --set "controller.service.customPorts[0].protocol"=TCP
+```
+Este comando despliega un ingress llamado `nginx-ingress`
 
   > Algunas de las opciones del comando son:\
   > `namespace=nginx-ingress` Instala sobre el namespace nginx-ingress y lo crea si no existe
@@ -128,11 +129,11 @@ cd nginx-workshop-cv/k8s
 
   
 
-  Validar que el despliegue es correcto y el Ingress esta corriendo con el comando:
-  ```
-  k get pod,svc -n nginx-ingress
-  ```
-  ![Ingress-Install](./ingress-install.png)
+Validar que el despliegue es correcto y el Ingress esta corriendo con el comando:
+```
+k get pod,svc -n nginx-ingress
+```
+![Ingress-Install](./ingress-install.png)
 
 ## 3. Instalar App BREWZ
 
