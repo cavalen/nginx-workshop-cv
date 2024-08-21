@@ -68,13 +68,14 @@ cd nginx-workshop-cv/k8s
   )
   ```
 
+Cambiar el valor de `controller.image.repository` por uno válido:
   ```sh
   helm install nginx-ingress nginx-stable/nginx-ingress \
     --namespace=nginx-ingress \
     --create-namespace \
     --set controller.kind=deployment \
     --set controller.replicaCount=1 \
-    --set controller.image.repository=cavalen/nginx-ingress \
+    --set controller.image.repository=registry/repo \
     --set controller.image.tag=3.5.0 \
     --set controller.image.pullPolicy=IfNotPresent \
     --set controller.nginxplus=true \

@@ -10,7 +10,7 @@
 [5. Auth con OpenID Connect (OIDC)](#5-auth-con-openid-connect-oidc)
 
 
-## 1. Instalación Nginx Plus
+## 1. Instalación NGINX Plus
 Nota: La instalación y la configuración de NGINX Plus se realizar por linea de comandos y editando archivos de configuración de texto.\
 Se recomienda tener alguna experiencia en el CLI de Linux.
 
@@ -93,7 +93,7 @@ Y son los pasos que seguiremos a continuación:
   sudo rm /etc/nginx/conf.d/default.conf
   ```
 
-## 2. Configuración base de nginx
+## 2. Configuración base de NGINX
 - Editar el archivo `/etc/nginx/nginx.conf` para cargar los módulos de WAF y NJS\
   `load_module modules/ngx_http_app_protect_module.so;`\
   `load_module modules/ngx_http_js_module.so;`\
