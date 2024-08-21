@@ -59,7 +59,6 @@ export DNSSVC=$(kubectl get svc -n kube-system kube-dns -o=jsonpath="{.spec.clus
 ```
 ```
 export CONFIGMAP_DATA=$(cat <<EOF
-#resolver 10.43.0.10 valid=5s;
 server {
   listen 12345;
   zone_sync;
