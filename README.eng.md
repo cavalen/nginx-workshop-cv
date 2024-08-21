@@ -7,7 +7,7 @@ To use the RDP connection, go to UDF --> ubuntu-desktop --> ACCESS --> XRDP
 |---------|-----------|
 | ubuntu  | HelloUDF  |
 
-It is recommended to set the color quality to the minimum for better performance of the RDP connection.
+It is recommended to set the RDP "color quality" option to the minimum for better performance.
 
 | Windows                              | MacOS                            |
 |--------------------------------------|----------------------------------|

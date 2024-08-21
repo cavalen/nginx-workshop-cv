@@ -40,4 +40,4 @@ El laboratorio cuenta con:
 
 ### [Parte 2: Laboratorio NGINX Ingress Controller](https://github.com/cavalen/nginx-workshop-cv/tree/main/docs/k8s)
 
-Nota: El BP de UDF es "NGINX Workshop - CV"
+:white_check_mark: **NOTA:** El BluePrint de UDF es [NGINX Workshop - CV](https://udf.f5.com/b/5d80a425-35e6-47fa-8753-bb7eedbd00ef#documentation)

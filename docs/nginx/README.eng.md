@@ -1,51 +1,51 @@
-# Instrucciones Lab NGINX Plus
+# NGINX Plus Lab 
 
-## Contenido:
-[1. Instalación Nginx Plus](#1-instalación-nginx-plus)\
-[2. Configuración base de nginx](#2-configuración-base-de-nginx)\
-[3. Archivos de Configuración](#3-archivos-de-configuración)\
-  . [3.1 Primera Aplicación - f5app.example.com](#crear-configuración-de-la-primera-app---f5appexamplecom)\
-  . [3.2 Primera Aplicación - echo.example.com](#crear-configuración-de-la-segunda-app---echoexamplecom)\
+## Content:
+[1. NGINX Plus Installation](#1-nginx-plus-installation)\
+[2. NGINX Base Configuration](#2-nginx-base-configuration)\
+[3. Configuration Files](#3-configuration-files)\
+  . [3.1 First App - f5app.example.com](#crear-configuración-de-la-primera-app---f5appexamplecom)\
+  . [3.2 Second App - echo.example.com](#crear-configuración-de-la-segunda-app---echoexamplecom)\
 [4. Web Application Firewall (WAF)](#4-web-application-firewall-waf)\
-[5. Auth con OpenID Connect (OIDC)](#5-auth-con-openid-connect-oidc)
+[5. OpenID Connect (OIDC) Auth](#5-auth-con-openid-connect-oidc)
 
 
-## 1. Instalación NGINX Plus
-Nota: La instalación y la configuración de NGINX Plus se realizar por linea de comandos y editando archivos de configuración de texto.\
-Se recomienda tener alguna experiencia en el CLI de Linux.
+## 1. NGINX Plus Installation
+Note: Installation and configuration of NGINX Plus is done via command line and editing text configuration files.\
+Some experience with the Linux CLI is recommended.
 
-En la guía se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
+Throughout the guide, `vim` will be used to create and modify configuration files, however you can use any editor of your choice.
 
 > [!NOTE]
-> Remote Desktop y WebShell (UDF) pueden dar dificultades a la hora de Copiar/Pegar el texto de los archivos de configuración. 
+> Remote Desktop and WebShell (UDF) can cause difficulties when copying and pasting text from configuration files. 
 > 
-> Para crear/editar los archivos de configuración de NGINX usando vscode, hacer doble click al acceso `nginx.code-workspace` en el escritorio del jumphost y usar el password `HelloUDF`
+> To create or edit NGINX configuration files with vscode, double-click the `nginx.code-workspace` shortcut on the Jumphost desktop and use the password `HelloUDF`
 > 
 > ![vscode](./vscode-workspace.png)
 > 
 > ![vscode-root](./root-password.png)
 >
 > 
-> Cuando se requiere reiniciar el servicio de NGINX se puede hacer desde la terminal de vscode.
+> I case you need to reload NGINX configuration you can use the vscode terminal.
 > 
-> El resto de instrucciones suponen que se esta haciendo la edición de archivos via linea de comandos con `vim`.
+> The rest of the instructions assume that you are editing files via the command line with `vim`.
 
 > [!NOTE]
-> <mark>IMPORTANTE: Los pasos de configuración de esta guía se hacen sobre el servidor `nginx`\
->  Usuario `ubuntu` con password `HelloUDF`</mark>
+> <mark>IMPORTANT: All of the configuration steps are done in the `nginx` server \
+>  Log-in with user `ubuntu` and password `HelloUDF`</mark>
 
-Abrir una terminal y hacer SSH al servidor `nginx`:
+Open a terminal and SSH to the `nginx` server:
 ```
 ssh ubuntu@10.1.1.7
 ```
-Para validar que estemos en el servidor correcto, podemos fijarnos en el prompt de la linea de comandos `ubuntu@nginx ~`
+To validate we are in the correct server, chech the CLI prompt  `ubuntu@nginx ~`
 ![SSH Nginx](./ssh-nginx.png)
 
-El flujo del despliegue se puede ver de esta forma
-![Flujo Instalacion](./install-flow.png)
-Y son los pasos que seguiremos a continuación:
+This Lab steps can be summarized like this flow:
+![Configuration flow](./install-flow.png)
+And those are the steps we will follow next:
 
-- Pre-requisitos del sistema operativo:
+- OS Pre-requisites:
   ```sh
   sudo apt-get install -y apt-transport-https lsb-release ca-certificates wget gnupg2 ubuntu-keyring
   ```
@@ -55,7 +55,7 @@ Y son los pasos que seguiremos a continuación:
   ```
   ```sh
   wget -qO - https://cs.nginx.com/static/keys/app-protect-security-updates.key | gpg --dearmor | sudo tee /usr/share/keyrings/app-protect-security-updates.gpg >/dev/null
-- Adicionar repositorios de Nginx:
+- Add NGINX Repositories:
   ```sh
   printf "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://pkgs.nginx.com/plus/ubuntu `lsb_release -cs` nginx-plus\n" | sudo tee /etc/apt/sources.list.d/nginx-plus.list
   ```
@@ -68,18 +68,18 @@ Y son los pasos que seguiremos a continuación:
   ```sh
   sudo wget -P /etc/apt/apt.conf.d https://cs.nginx.com/static/files/90pkgs-nginx
   ```
-- Instalar paquetes:\
-  La instalación de NGINX Plus requiere un certificado y una llave para autenticarse contra el repositorio de F5/NGINX.\
-  Estos ya se encuentran en `/etc/ssl/nginx/nginx-repo.crt` y `/etc/ssl/nginx/nginx-repo.key`
+- Install packages:\
+  NGINX Plus installation requires a certificate/key pair to authenticate into the F5/NGINX repositories and should be located in `/etc/ssl/nginx/nginx-repo.crt` & `/etc/ssl/nginx/nginx-repo.key` (This is already done)
 
   ```sh
   sudo apt update && sudo apt install -y nginx-plus app-protect nginx-plus-module-njs
   ```
 
-  `nginx-plus` es el paquete principal de nginx\
-  `app-protect` es el paquete del WAF\
-  `nginx-plus-module-njs` es el paquete de NGINX JavaScript (NJS), utilizado por la integración de OIDC
-- Activar nginx a la hora de iniciar el sistema y validar la instalación:
+  `nginx-plus` is NGINX Plus main package\
+  `app-protect` is the WAF package\
+  `nginx-plus-module-njs` is the NGINX JavaScript (NJS) package, and it is needed by the OIDC integration
+
+- Enable NGINX at boot time and validate the install:
   ```sh
   sudo systemctl enable nginx
   sudo systemctl start nginx
@@ -88,25 +88,26 @@ Y son los pasos que seguiremos a continuación:
   ```
   curl http://0:80
   ```
-  `nginx -v` muestra la version de nginx instalada\
-  `curl http://0:80` retorna la pagina por defecto de nginx
-- Borrar archivo de configuración del sitio "default", ya que no lo usaremos
+  `nginx -v` Show NGINX version\
+  `curl http://0:80` Returns the default NGINX web site
+
+- Delete the "default site" config file, this one is not needed
   ```sh
   sudo rm /etc/nginx/conf.d/default.conf
   ```
 
-## 2. Configuración base de NGINX
-- Editar el archivo `/etc/nginx/nginx.conf` para cargar los módulos de WAF y NJS\
+## 2. NGINX Base Configuration
+- Edit `/etc/nginx/nginx.conf` to add the WAF and NJS dynamic modules\
   `load_module modules/ngx_http_app_protect_module.so;`\
   `load_module modules/ngx_http_js_module.so;`\
   \
-  Adicionalmente para configurar 2 variables que se recomienda modificar a la hora de usar NGINX JavaScript y la integración con OIDC\
+  Aditionaly, we need to configure 2 internal variables that are recommended when using NJS and OIDC integration\
   `variables_hash_max_size 2048;`\
   `variables_hash_bucket_size 128;`
   ```sh
   sudo vim /etc/nginx/nginx.conf
   ```
-  El archivo de configuración `nginx.conf` debe quedar como este:
+  The `nginx.conf` config file should look like this:
   ```nginx
   user  nginx;
   worker_processes  auto;
@@ -188,8 +189,7 @@ Y son los pasos que seguiremos a continuación:
   #}
   ```
 
-- Crear configuración para la exponer el Dashboard y el API de NGINX Plus.
-  Por defecto este Dashboard se expone en el puerto 8080 y se consulta via Browser
+- Create the configuration to expose the NGINX Plus Dashboard and API endpoint. By default port 8080 is used.
   ```sh
   sudo vim /etc/nginx/conf.d/api.conf
   ```
@@ -222,23 +222,23 @@ Y son los pasos que seguiremos a continuación:
       }
   }
   ```
-- Recargar la configuración de nginx con el comando
+- Reload NGINX configuration:
   ```sh
   sudo nginx -s reload
   ```
-  Probar desde el browser en **http://dashboard.example.com:8080**
+  Test from the browser - **http://dashboard.example.com:8080**
 
   ![NGINX Dashboard](./nginx-dashboard.png)
-  El Dashboard aun no presenta información reelevante pues no hay configuda aún una aplicación en NGINX.
+  The Dashboard is not showing much information yet, because there are no applications configured to be proxied by NGINX.
  ---
-## 3. Archivos de Configuración
-Los archivos de configuración de los sitios, se recomienda crearlos en la ruta `/etc/nginx/conf.d/` y que cada sitio tenga un archivo `.conf` propio, con un nombre significativo, por ejemplo `api.misitio.com.conf`
+## 3. Configuration Files
+It is recommended to create independant configuration files (one per site) with extension `.conf` and located inside the folder `/etc/nginx/conf.d/` and using a name related to the site/app to be exposed, example: `api.mysite.com.conf`. But any name with a `conf` extension will work.
 
-- ### Crear configuración de la primera App - *f5app.example.com*
+- ### Create configuration for the first App - *f5app.example.com*
   ```sh
   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
   ```
-  El archivo de configuración `f5app.example.com.conf` debe quedar como este:
+  The file `f5app.example.com.conf` should look like this:
   ```nginx
   # Custom Health Check
   match f5app_health {
@@ -269,36 +269,38 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
       #sticky cookie helloworld expires=1h domain=.example.com path=/;  ## SESSION PERSISTENCE
   }
   ```
-  Recargar la configuración de nginx:
+  Reload NGINX configuration:
   ```sh
   sudo nginx -s reload
   ```
 
-  Probar desde el browser en **http://f5app.example.com**
+  Test from the browser - **http://f5app.example.com**
 
   ![f5app](./f5app.png)
 
-  La App solo esta expuesta a traves del reverse-proxy, pero no esta protegida:
-  - ir a Demos > Credit Cards --> El servidor expone información sensible.
-  - Correr un XSS - `http://f5app.example.com/<script>Danger!</script>` (retorna un 404, mas sin embargo el servidor procesa el request)
+  This application is being exposed through the reverse-proxy, but it is not protected: 
+  - Go to Demos > Credit Cards :arrow_right: Note that the server is exposing sensitive information (credit card numbers).
+  - Run a XSS - `http://f5app.example.com/<script>Danger!</script>` (The App return a 404 Not Found, however the server processes the request)
 
-  Validar en el Dashboard de NGINX que ya podemos ver información sobre f5app, su estado de salud y monitores en **http://dashboard.example.com:8080**
+  Validate in the NGINX Plus Dashboard, now we can see information from f5app, metrics, health state and monitores - **http://dashboard.example.com:8080**
 
-  Realicemos una modificacion al Heath-Check:
+  Now, let's modify the Heath-Check configuration:
   ```sh
   sudo vim /etc/nginx/conf.d/f5app.example.com.conf
   ```
-  Cambiamos el segmento `match f5app_health` que quede así:
+  We must change the block `match f5app_health` like this: 
   ```
   match f5app_health {
       status 200;
       body ~ "Workshop K8S vLab";
   }
   ```
-  Recargamos la configuración de nginx con `sudo nginx -s reload` y probamos de nuevo el app
+  The Body section now contains a string that the server's answer do not contain.
+  Reload the configuration with `sudo nginx -s reload` y test the application again.
   ![502 error](./f5app-502.png)
 
-  **Que sucede?** El aplicativo no carga y responde con un error 502 pues no hay backends/upstreams saludables.
+  **What is happening?** The App does not work, this is expected, and the answer from NGINX is a `502 Bad Gateway` because there are no healthy upstreams (The string **"Workshop K8S vLab** is not found in the body)
+
 
   En el Dashboard de NGINX podemos ver también los health checks realizados y el estado del servidor
   ![Dashboard f5app](./f5app-dashboard.png)
