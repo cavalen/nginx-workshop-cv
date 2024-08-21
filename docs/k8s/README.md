@@ -69,11 +69,9 @@ EOF
 )
 ```
 
-> [!NOTE]
-> Editar el valor de `controller.image.repository` por uno válido, ej. `controller.image.repository=myregistry/nginx-plus-ingress`
+> :warning: Editar el valor de `controller.image.repository` por uno válido, ej. `controller.image.repository=myregistry/nginx-plus-ingress`
 
-> [!NOTE]
-> Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0` 
+> :warning: Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0` 
 
 ```sh
 helm install nginx-ingress nginx-stable/nginx-ingress \
