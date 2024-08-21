@@ -17,20 +17,29 @@ Se recomienda tener alguna experiencia en el CLI de Linux.
 En la guía se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
 
 > [!NOTE]
+> Remote Desktop y WebShell (UDF) pueden dar dificultades a la hora de Copiar/Pegar el texto de los archivos de configuración. 
+> 
+> Para crear/editar los archivos de configuración de NGINX usando vscode, hacer doble click al acceso `nginx.code-workspace` en el escritorio del jumphost y usar el password `HelloUDF`
+> 
+> ![vscode](./vscode-workspace.png)
+> 
+> ![vscode-root](./root-password.png)
+>
+> 
+> Cuando se requiere reiniciar el servicio de NGINX se puede hacer desde la terminal de vscode.
+> 
+> El resto de instrucciones suponen que se esta haciendo la edición de archivos via linea de comandos con `vim`.
+
+> [!NOTE]
 > <mark>IMPORTANTE: Los pasos de configuración de esta guía se hacen sobre el servidor `nginx`\
 >  Usuario `ubuntu` con password `HelloUDF`</mark>
+
+Abrir una terminal y hacer SSH al servidor `nginx`:
 ```
 ssh ubuntu@10.1.1.7
 ```
 Para validar que estemos en el servidor correcto, podemos fijarnos en el prompt de la linea de comandos `ubuntu@nginx ~`
 ![SSH Nginx](./ssh-nginx.png)
-
-> [!NOTE]
-> Remote Desktop y WebShell (UDF) pueden presentar dificultades a la hora de Copiar/Pegar el texto de los archivos de configuracion. Para editar los archivos de configuracion de NGINX usando vscode por SSH al servidor de NGINX, hacer doble click al acceso nginx.code-workspace en el escritorio del jumphost `ubuntu-desktop` y usar el password `HelloUDF`
-> 
-> ![vscode](./vscode-workspace.png)
-> 
-> ![vscode-root](./root-password.png)
 
 El flujo del despliegue se puede ver de esta forma
 ![Flujo Instalacion](./install-flow.png)
