@@ -695,29 +695,31 @@ Now, we will proceed to create all of the configuration files needed for the WAF
        }
    ]
    ```
-- Last step is activate the WAF for the `f5app` application, editing the file `/etc/nginx/conf.d/f5app.example.com.conf`
+- The first thing we need to do to enable NAP (NGINX App Protect) is to load the WAF dynamic module inside `nginx.conf`, this was done in a previous step in this lab, by adding the directive `load_module` [in this section](#2-nginx-base-configuration)
 
-   WAF configurations can be added at the `server {}` level and apply to all of the application ("global") or can be added inside a specific `location` only. In this case we will add the waf for all of the `f5app` application.
+   Next step is to activate the WAF for the `f5app` application, editing the file `/etc/nginx/conf.d/f5app.example.com.conf`
 
-   First, the prerequisite to use NAP is to load the WAF module inside `nginx.conf`, this was done in a previous step in this lab, by adding the directive `load_module` in `nginx.conf`
+   WAF configurations can be added at the `server {}` level and apply to all of the application ("global") or can be added inside a specific `location` only. In this case we will add the waf for the `f5app` application in the server block.
 
-   `app_protect_enable on;` Activates the WAF.\
-   `app_protect_security_log_enable on;` Activates logging for the WAF.\
-   `app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;` Indica el formato a usar para los logs de WAF y el destino. Puede usarse multiples veces para hacer logs a varios destinos.\
-   `app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";` Indica la politica de WAF a usar.
-
-   Las lineas que se adicionan a la configuracion en el bloque `server` son:
+   The lines we need to add to the configuration file in the `server` block are:
    ```
    app_protect_enable on;
    app_protect_security_log_enable on;
    app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;
    app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";
    ```
+
+   `app_protect_enable on;` Activates the WAF.\
+   `app_protect_security_log_enable on;` Activates logging for the WAF.\
+   `app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;` Specifies the logging format to be used (by referencing a JSON configuration) and the destination for the logs (a grafana server in this case). This directive can be used multiple times to send logs to several destinations.\
+   `app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";` Indicates the WAF policy to use.
+
+   Enable WAF for f5app.example.com: 
    ```
    sudo vim /etc/nginx/conf.d/f5app.example.com.conf
    ```
 
-   El archivo `f5app.example.com.conf` queda de la siguiente manera:
+   The file `f5app.example.com.conf` should look like this:
    ```nginx
    # Custom Health Check
    match f5app_health {
@@ -753,31 +755,33 @@ Now, we will proceed to create all of the configuration files needed for the WAF
    }
    ```
 
-  Recargar la configuración de nginx:
+  Reload NGINX configuration:
   ```
   sudo nginx -s reload
   ```
-  Validar configuración:
+  Validate the configuration is ok with:
   ```
   sudo nginx -t
   ```
 
-  Probar desde el browser **http://f5app.example.com**
+  Test from the browser - **http://f5app.example.com**
 
-  Hacer algunas simulaciones de ataques a la aplicación, <mark>y tomar nota del SupportID</mark>
-    - Adicionar al path un XSS `http://f5app.example.com/<script>Danger!</script>`
-    - Adicionar al path un SQLi `http://f5app.example.com/?a='or 1=1#'`
-    - Navegar en la aplicacion al menu Demos > CC Numbers y validar que la configuración de DataGuard ofusca información sensible.
+  Now, let's make some ilegal requests to the application and <mark> take note of the SupportID</mark>
+    - XSS example: `http://f5app.example.com/<script>Danger!</script>`
+    - SQLi example: `http://f5app.example.com/?a='or 1=1#'`
+    - Navegate to: Demos > CC Numbers and note that the DataGuard feature obfuscates sensitive information (credit card numbers).
 
-  En Grafana validar logs del WAF:\
-  Ir a **http://grafana.example.com:3000** y ver los Dashboards Attack Signatures, Main Dashboard y SupportIDs\
+  Go to the Grafana Dashboard and have a look at the logs sent by the WAF - **http://grafana.example.com:3000**
+
+  Browse the Attack Signatures, Main Dashboard y SupportIDs dashboards:
   ![Grafana Dashboars](./grafana1.png)
 
   ![Grafana Dashboars](./grafana2.png)
 
 ## 5. Auth using OpenID Connect (OIDC)
-NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicación o el backend.\
-Esta integración es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.
+NGINX Plus allows the integration with an Identity Provider (IdP) to authenticate users before "proxying" them to the application or backend.
+
+:warning: This integration us a manual process, it is done with an additional component that must be downloaded from [GitHub](https://github.com/nginxinc/nginx-openid-connect) and configured according to your OIDC environment. 
 
 ```mermaid
 flowchart BT
@@ -797,15 +801,17 @@ flowchart BT
     style id2 fill:#009639,stroke:#215732,stroke-width:2px,color:#fff
     style id4 fill:#666,stroke:#222,stroke-width:1px,color:#fff
 ```
-`Figura 1. Componentes a Alto nivel de un entorno de OpenID Connect`
+`Figure 1. High level components of an OpenID Connect environment`
 
-Esta implementación asume lo siguiente del entorno:
-  * El identity provider (IdP) soportas OpenID Connect 1.0
-  * El "authorization code flow" esta en uso
-  * NGINX Plus esta configurado como un Relying Party
-  * El IdP conoce a NGINX Plus como un cliente confidentialnt o un cliente publico usando PKCE
+This implementation assumes the following environment:
+  * The identity provider (IdP) supports OpenID Connect 1.0
+  * The authorization code flow is in use
+  * NGINX Plus is configured as a relying party
+  * The IdP knows NGINX Plus as a confidential client or a public client using PKCE
 
-Con este entorno, tanto el client como NGINX Plus se comunican directamente con el IdP en diferentes momentos durante el proceso de autenticación.
+Detailed documentation is available at https://github.com/nginxinc/nginx-openid-connect
+
+With this environment, both the client and NGINX Plus communicate directly with the IdP at different stages during the initial authentication event.
 
 ```mermaid
 sequenceDiagram
@@ -832,24 +838,24 @@ sequenceDiagram
     NGINX Plus->>Web App: Proxies request
     Web App->>Browser: Sends resource
 ```
-`Figura 2. Flujo de autorización de OpenID Connect`
+`Figure 2. OpenID Connect authorization code flow protocol`
 
-El laboratorio cuenta con un despliegue de `Keycloak` usado como Identity Provider (IdP) el cual valida las credenciales del usuario.
+This lab includes a `keycloak` deployment used as Identity Provider (IdP), here we will validate user credentials.
 
-Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com** con las credenciales `admin/admin` y en este hay un client llamado `nginx-plus` y un usuario `test` con password `test`
+Keycloak is pre-configured, and can be accesed at **https://keycloak.example.com** using `admin/admin` credentials. There is also a `nginx-plus` client and a `test` user (password = test)
 
 | Client                        | User                          |
 |-------------------------------|-------------------------------|
 | ![Keycloak1](./keycloak1.png) | ![Keycloak2](./keycloak2.png) |
 
-- La configuración a grandes rasgos consta de 5 pasos:
-   1. Descargar el software necesario para la integración de OIDC desde GitHub
-   2. Ejecutar un script de configuración via linea de comandos
-   3. Validar la configuración generada por el script (Datos y rutas del Identity Provider)
-   4. Copiar la configuración generada por el script a la misma ruta donde se encuentra el archivo de configuración de la aplicación a la que queremos integrar autenticación (generalmente `/etc/nginx/conf.d`)
-   5. Editar la configuración del aplicativo (`/etc/nginx/conf.d/<nombre-app>.conf`) y adicionar las directivas generadas por el script.
+- At a high level, the configuration process have 5 steps:
+   1. Download the needed software from GitHub, this software provides the integration with OIDC.
+   2. Run a configuration script via command line.
+   3. Validate the output of the script (a set of files) against your Identity Provider settings.
+   4. Copy the new files created by the script where the nginx configuration for the application we want to integrate with OIDC is located (Usually `/etc/nginx/conf.d`)
+   5. Edit the site's configuraion (`/etc/nginx/conf.d/<your-app>.conf`) and add the needed directives generated by the script.
 
-- Crear un nuevo "sitio" al cual habilitar autenticación por medio de OIDC
+- First, create a new "app", to wich we will add an authentication layer using NGINX and OIDC. Let's name this app `oidc.example.com`
   ```
   sudo vim /etc/nginx/conf.d/oidc.example.com.conf
   ```
@@ -879,35 +885,38 @@ Ya esta pre-configurado, y se puede acceder via **https://keycloak.example.com**
   sudo nginx -s reload
   ```
 
-- Descargar el software desde GitHub.\
-  Hay un branch recomendado para cada version de NGINX Plus, por ejemplo para NGINX Plus R31 el comando git debe especificar el branch adecuado (ej, `git clone -b R31 <REPO>`)\
-En este caso descargaremos la ultima version (latest)
+- Download software from GitHub.\
+  NOTE: there is a recommended branch for every NGINX Plus release. As an example: if you are using NGINX Plus R31 the git command to pull the repository should include the recommended branch (`git clone -b R31 <REPO>`)\
+  
+  In this case, download the latest version.
   ```sh
   git clone https://github.com/nginxinc/nginx-openid-connect
   ```
   ```sh
   cd nginx-openid-connect
   ```
+
+  The configuration script requires some information that must be provided by the IdP admin:
   ```sh
   ./configure.sh -x -h oidc.example.com -k request -i nginx-plus -s 1234567890ABCDEF http://keycloak.example.com/realms/master/.well-known/openid-configuration
   ```
-  `-h` indica el FQDN del IdP\
-  `-x` Insecure, no valida el certificado HTTPS (OK para entornos de prueba)\
-  `-i nginx-plus` Client ID tal como esta configurado en el OpenID Connect Provider\
-  `-s 1234567890ABCDEF` Client Secret tal como esta configurado en el OpenID Connect Provider\
-  `http://keycloak.example.com/realms/master/.well-known/openid-configuration` Discovery interface del IdP.
+  `-h` IdP Hostname or FQDN\
+  `-x` Insecure, ignore invalid TLS certificates (OK in testing environments)\
+  `-i nginx-plus` Client ID, as configured in the Identity Provider (IdP)\
+  `-s 1234567890ABCDEF` Client Secret, as configured in the Identity Provider (IdP)\
+  `http://keycloak.example.com/realms/master/.well-known/openid-configuration` IdP Discovery interface.
 
-- Configurar Parámetros de OIDC (1)
+- OIDC Parameter Configuration (1)
 
-  El script crea varios archivos, el primero a editar es `openid_connect_configuration.conf`
+  After running the configuration script, we need to edit some files. The first one we need to edit is `openid_connect_configuration.conf`
 
-  Solo es necesario editar la directiva `resolver` al comienzo del archivo.\
-  Como estamos usando el dominio de pruebas `example.com` este no resuelve con el DNS publico por defecto que utiliza el script (8.8.8.8) y debemos indicar la dirección IP del servicio DNS interno `127.0.0.53`.
+  The only change we need to is the `resolver` directive at the top of the file.\
+  We are using a test domain `example.com`, this will not resolve by the public DNS server that the script use by default (8.8.8.8), because of this, we need to use an internal DNS `127.0.0.53`
 
   ```sh
   sudo vim openid_connect.server_conf
   ```
-  El archivo final `openid_connect.server_conf` queda asi:
+  The file `openid_connect.server_conf` should look like this:
   ```nginx
       # Advanced configuration START
     set $internal_error_message "NGINX / OpenID Connect login failure\n";
@@ -1006,30 +1015,31 @@ En este caso descargaremos la ultima version (latest)
     # vim: syntax=nginx
     ```
 
-- Configurar Parámetros de OIDC (2)
+- OIDC Parameter Configuration (2)
 
-  El segundo archivo a configurar es `openid_connect_configuration.conf`.
-  Debemos validar que el contenido del archivo sea el correcto respecto a los endpoints de OIDC de Keycloak.
+  The seconf file to edit is `openid_connect_configuration.conf`.
+  We must validate that the content of the file matches the OIDC endpoints from the IdP (Keycloak). 
 
-  El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` nos puede ayudar en esta validación:
+  The IdP administrator must provide the correct values and  debe conocer estos valores, Additionally, the `openid-configurations` URL from the IdP can help us with this validation:
 
   **http://keycloak.example.com/realms/master/.well-known/openid-configuration**
   
   ![Keycloak3](./keycloak3.png)
 
-  Los valores importantes a configurar están en las directivas `map` del archivo
-  | Parámetro | Valor |
+  The values we need to configure are in the `map` directives:
+  | Parameter | Value |
   |-----------|-------|
   | `$oidc_authz_endpoint` | `oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/auth;` |
   | `$oidc_token_endpoint` | `oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/token;` |
   | `$oidc_jwt_keyfile` | `oidc.example.com https://keycloak.example.com/realms/master/protocol/openid-connect/certs;` |
   | `$host $oidc_client` | `oidc.example.com nginx-plus;` |
   | `$oidc_client_secret` | `oidc.example.com 1234567890ABCDEF;` |
-
+  
+  Modify the configuration accordingly:
   ```sh
   sudo vim openid_connect_configuration.conf
   ```
-  El archivo final `openid_connect_configuration.conf` queda asi:
+  The file `openid_connect_configuration.conf` should look like this:
   ```nginx
   # OpenID Connect configuration
   #
@@ -1168,19 +1178,22 @@ En este caso descargaremos la ultima version (latest)
 
   # vim: syntax=nginx
   ```
-- Copiar archivos generados por el script a la carpeta de nginx, donde están la configuración de la app a la que vamos a integrar autenticación.
+- Copy the files created by the script to the same location where the Application's configuration resides (usually `/etc/nginx/conf.d/`).
   ```sh
   sudo cp openid_connect* /etc/nginx/conf.d/
   ```
-- Editar aplicación Web para integrar OIDC
+- Finally, we need to edit our Web Application to integrate OIDC.
 
-  En uno de los primeros pasos de la configuración de OIDC, creamos un archivo para el sitio `oidc.example.com`. Ahora debemos editarlo para incluir lo que el script de configuración creo y lo que hemos editado de forma manual.
+  One of the first steps we did in the OIDC configuration was to create a file for a new application `oidc.example.com` `. Now we need to edit this file to include some directives created by the script. This step is done by hand.
 
-  El script crea un archivo llamado `frontend.conf`, este archivo no es necesario, pero muestra las directivas que debe tener una aplicación para hacer la integración de OIDC y se usa como ejemplo de configuración.
+  The script creates a file `frontend.conf`, this file is no used directly, it is provided as an example and provides the directives that we need to add to our application to enable the OIDC integration.
+
+  Review the contents of this file, and for the last step we need to edit `oidc.example.com.conf`
 
   ```sh
   sudo vim /etc/nginx/conf.d/oidc.example.com.conf
   ```
+  The file `oidc.example.com.conf` should look like this:
   ```nginx
   # Custom log format to include the 'sub' claim in the REMOTE_USER field
   log_format main_jwt '$remote_addr - $jwt_claim_sub [$time_local] "$request" $status '
@@ -1229,15 +1242,15 @@ En este caso descargaremos la ultima version (latest)
       }
   }
   ```
-  Recargamos la configuración de Nginx.
+  Reload NGINX Plus configuration:
   ```sh
   sudo nginx -s reload
   ```
-  Validamos en un browser en **https://oidc.example.com**
+  Validate in a browser - **https://oidc.example.com**
 
-  La aplicación debe ahora solicitar credenciales a Keycloak antes de permitir acceso a la App. Usar `test:test`
+  The application should now ask for credentials using Keycloak before allowing access. Use `test:test`
   |                               |                               |
   |-------------------------------|-------------------------------|
   | ![Keycloak4](./keycloak4.png) | ![Keycloak5](./keycloak5.png) |
 
-### -FIN-
+### -FIN- 
