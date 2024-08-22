@@ -692,16 +692,11 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
        }
    ]
    ```
-- Como ultimo paso, activamos el WAF para la aplicación `f5app`, editando el archivo `/etc/nginx/conf.d/f5app.example.com.conf`
+- Lo primero que se debe hacer para activar NAP (NGINX App Protect) es cargar el módulo dinamico del WAF en `nginx.conf`. Esto se hizo en un paso anterior de este Lab adicionando la directiva `load_module` [en esta seccion](#2-configuración-base-de-nginx)
+  
+  Siguiente paso, activamos el WAF para la aplicación `f5app`, editando el archivo `/etc/nginx/conf.d/f5app.example.com.conf`
 
    Las configuraciones a nivel WAF se pueden adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicación f5app) o en un `location` especifico. En este caso lo hacemos para toda la aplicación.
-
-   Como requisito, el modulo de WAF debe estar cargado a NGINX, esto lo hicimos en un paso anterior agregando la directiva `load_module` en `nginx.conf`
-
-   `app_protect_enable on;` Activa el WAF.\
-   `app_protect_security_log_enable on;` Activa logs para el WAF.\
-   `app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;` Indica el formato a usar para los logs de WAF y el destino. Puede usarse multiples veces para hacer logs a varios destinos.\
-   `app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";` Indica la politica de WAF a usar.
 
    Las lineas que se adicionan a la configuracion en el bloque `server` son:
    ```
@@ -710,6 +705,12 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;
    app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";
    ```
+
+   `app_protect_enable on;` Activa el WAF.\
+   `app_protect_security_log_enable on;` Activa logs para el WAF.\
+   `app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;` Indica el formato a usar para los logs de WAF y el destino. Puede usarse multiples veces para hacer logs a varios destinos.\
+   `app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";` Indica la politica de WAF a usar.
+
    ```
    sudo vim /etc/nginx/conf.d/f5app.example.com.conf
    ```
@@ -773,8 +774,9 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
   ![Grafana Dashboars](./grafana2.png)
 
 ## 5. Auth con OpenID Connect (OIDC)
-NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicación o el backend.\
-Esta integración es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.
+NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicación o el backend.
+
+:warning: Esta integracion es un proceso manual, se hace con un componente adicional descargado desde [GitHub](https://github.com/nginxinc/nginx-openid-connect) y configurado de acuerdo con su entorno de OIDC. 
 
 ```mermaid
 flowchart BT
@@ -801,6 +803,8 @@ Esta implementación asume lo siguiente del entorno:
   * El "authorization code flow" esta en uso
   * NGINX Plus esta configurado como un Relying Party
   * El IdP conoce a NGINX Plus como un cliente confidentialnt o un cliente publico usando PKCE
+
+La documentación detallada esta disponible en https://github.com/nginxinc/nginx-openid-connect
 
 Con este entorno, tanto el client como NGINX Plus se comunican directamente con el IdP en diferentes momentos durante el proceso de autenticación.
 
