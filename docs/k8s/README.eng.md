@@ -1,34 +1,27 @@
-# Instrucciones Lab NGINX Ingress Controller
+# NGINX Ingress Controller Lab
 
-## Contenido:
-[1. Pre-requisitos](#1-pre-requisitos)\
-[2. Instalación K8s Ingress via Helm](#2-instalación-k8s-ingress-via-helm)\
-[3. Instalar App BREWZ](#3-instalar-app-brewz)\
-[4. Publicar un Ingress (Virtual Server)](#4-publicar-un-ingress-virtual-server)
-[5. HealtChecks Activos](#5-healtchecks-activos)\
-[6. Manejo de Errores](#6-manejo-de-errores)\
-[7. Web Application Firewall (WAF)](#7-web-application-firewall-waf)\
-[8. JWT Auth](#8-jwt-auth)\
-[9. Integración IdP con OIDC](#9-integración-idp-con-oidc)
+## Content:
+[1. Pre-requisites](#1-prerequisites)\
+[2. K8s Ingress Installation via Helm](#2-k8s-ingress-installation-via-helm)\
+[3. BREWZ App Installation](#3-brewz-app-installation)\
+[4. Publish an Ingress (Virtual Server)](#4-publish-an-ingress-virtual-server)
+[4. Active Healt Checks](#5-active-healt-checks)\
+[5. Error Management](#6-error-management)\
+[6. Web Application Firewall (WAF)](#7-web-application-firewall-waf)\
+[7. JWT Auth](#8-jwt-auth)\
+[8. Auth using OpenID Connect (OIDC)](#9-auth-using-openid-connect-oidc)
 
-## 1. Pre-requisitos
-
-**Nota:** La instalación y la configuración de NGINX Ingress Controller se realizar por linea de comandos usando `kubectl` y manifiestos en formato YAML.
-Se recomienda tener alguna experiencia en el CLI de Linux y Kubernetes.
-
-En la guía se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
-
-**Nota:** En la linea de comandos hay un alias para `kubectl`. Los comandos de la guía se harán con el alias `k`
+## 1. Prerequisites
 
 > [!NOTE]
-> **IMPORTANTE:** Los pasos de configuración de esta guía se hacen sobre el servidor `ubuntu-desktop`, que es el servidor RDP. No hay necesidad de hacer SSH a otro equipo para esta sección del Lab.
+> :warning: **Note:** NGINX Ingress Controller instalation and configuration is done using the command line (CLI) with `helm`, `kubectl` and `YAML manifests` .
+> Linux CLI and Kubernetes experience is recommended.
 
-> [!NOTE]
-> Copiar y Pegar entre el servidor `ubuntu-desktop` y el equipo local puede resultar en errores de formato del texto copiado, lo que se traducen en errores a la hora de desplegar las configuraciones.
->
-> 
-> Se recomienda ejecutar el laboratorio en su totalidad desde el RDP `ubuntu-desktop` (guia + CLI) o usar la opcion de UDF de WebShell al servidor `ubuntu-desktop` y seguir la guia desde el PC local.
->
+> :warning: **Note:** Using the CLI there is an alias for `kubectl`. The instructions use the alias `k`.
+
+> **IMPORTANT:** All the steps from this guide are done in the machine `ubuntu-desktop` (RDP Server). There is no need to do SSH to another machine for this section of the Lab.
+
+> The Remote Desktop connection can cause difficulties when copying and pasting text from the guide. Try to follow the guide and running the CLI commands from the `ubuntu-desktop` RDP client or use the Webshell access to run the CLI commands and the RDP session to browse the applications. 
 > ![Webshell](./webshell.png)
 
 
@@ -41,7 +34,7 @@ cd nginx-workshop-cv/k8s
 ```
 
 
-## 2. Instalación K8s Ingress via Helm
+## 2. K8s Ingress Installation via Helm
 
 #### Instalar Helm:
 ```
@@ -133,7 +126,7 @@ k get pod,svc -n nginx-ingress
 ```
 ![Ingress-Install](./ingress-install.png)
 
-## 3. Instalar App BREWZ
+## 3. BREWZ App Installation
 
 ```sh
 kubectl create ns brewz
@@ -152,7 +145,7 @@ k get svc,pod -n brewz
 ```
 ![Brewz-Install](./brewz1.png)
 
-## 4. Publicar un Ingress (Virtual Server)
+## 4. Publish an Ingress (Virtual Server)
 
 ```sh
 k apply -f 1-virtualserver-brewz.yaml -n brewz
@@ -219,7 +212,7 @@ Probar la app en el Browser en **https://brewz.example.com**
 
 No tiene seguridad, solo se esta exponiendo la app
 
-## 5. HealtChecks Activos
+## 5. Active Healt Checks
 
 Antes de hacer cambios al Ingress, simulamos un fallo en la aplicación (ej, responder con un 200 OK pero no lo que la aplicación debe responder)
 
@@ -342,7 +335,7 @@ Como editamos el POD del Aplicativo y el Health Check busca la cadena "Brewz" y 
 
 ![502 Error](./brewz-502.png)
 
-## 6. Manejo de Errores
+## 6. Error Management
 
 En este escenario buscamos que el Ingress intercepte este error 502 y no lo presente al usuario, sino que responda con algún contenido. Esto se logra por medio de una directiva llamada `errorPages`
 
@@ -777,7 +770,7 @@ Probamos con un token válido, enviado en el Header *token*:
 curl -k -s -H "token: `cat jwt/token-good.jwt`" https://brewz.example.com/api/recommendations | jq
 ```
 
-## 9. Integración IdP con OIDC
+## 9. Auth using OpenID Connect (OIDC)
 
 Vamos a crear un nuevo endpoint `/admin` en el Ingress que responda con un contenido estático. A este endpoint le asociamos una política de OIDC llamada `oidc-policy-brewz` que pida credenciales validas a Keycloak antes de llevar al usuario a este endpoint.
 
