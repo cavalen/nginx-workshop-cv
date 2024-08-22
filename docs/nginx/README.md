@@ -416,6 +416,9 @@ La política de seguridad que usaremos se compone de:
 
 Ahora procederemos a crear todos los archivos de configuración del WAF y activarlo para una de las aplicaciones desplegadas en un paso anterior
 
+:bulb: Recuerde, todos los archivos que necesitamos pueden ser creados/editados via CLI en el servidor `nginx`, o usando `vscode` desde el jumphost ubuntu-server
+
+
 -  Crear archivo de log profile en `/etc/nginx/waf/`
    ```sh
    sudo mkdir /etc/nginx/waf
@@ -691,7 +694,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
    ```
 - Como ultimo paso, activamos el WAF para la aplicación `f5app`, editando el archivo `/etc/nginx/conf.d/f5app.example.com.conf`
 
-   Las configuraciones a nivel WAF adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicación f5app) o en un `location` especifico. En este caso lo hacemos para toda la aplicación.
+   Las configuraciones a nivel WAF se pueden adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicación f5app) o en un `location` especifico. En este caso lo hacemos para toda la aplicación.
 
    Como requisito, el modulo de WAF debe estar cargado a NGINX, esto lo hicimos en un paso anterior agregando la directiva `load_module` en `nginx.conf`
 

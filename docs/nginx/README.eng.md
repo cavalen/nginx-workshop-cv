@@ -4,10 +4,10 @@
 [1. NGINX Plus Installation](#1-nginx-plus-installation)\
 [2. NGINX Base Configuration](#2-nginx-base-configuration)\
 [3. Configuration Files](#3-configuration-files)\
-  . [3.1 First App - f5app.example.com](#crear-configuración-de-la-primera-app---f5appexamplecom)\
-  . [3.2 Second App - echo.example.com](#crear-configuración-de-la-segunda-app---echoexamplecom)\
+  . [3.1 First App - f5app.example.com](#create-configuration-for-the-first-app---f5appexamplecom)\
+  . [3.2 Second App - echo.example.com](#create-configuration-for-the-second-app---echoexamplecom)\
 [4. Web Application Firewall (WAF)](#4-web-application-firewall-waf)\
-[5. OpenID Connect (OIDC) Auth](#5-auth-con-openid-connect-oidc)
+[5. OpenID Connect (OIDC) Auth](#5-auth-using-openid-connect-oidc)
 
 
 ## 1. NGINX Plus Installation
@@ -403,28 +403,32 @@ Reload NGINX configuration:
 ---
 
 ## 4. Web Application Firewall (WAF)
-NGINX App Protect (v4) utiliza archivos en formato JSON para la definición de la política de seguridad declarativa. Estos archivos pueden estar en cualquier ubicación en el filesystem, para este Lab los colocaremos en la ruta `/etc/nginx/waf/`
+NGINX App Protect (v4) use JSON config files for its declarative security policy. These files can be on any location in the filesystem, for this lab we will use the path `/etc/nginx/waf/`
 
-También es posible tener la política como un archivo binario llamado "policy bundle" que se compila por medio de un software llamado [NGINX App Protect Policy Compiler](https://docs.nginx.com/nginx-app-protect-waf/v5/admin-guide/compiler/), pero para este Lab usaremos los archivos JSON
+It is also possible to have the security policy as a binary file or "policy bundle", that is created using a software called [NGINX App Protect Policy Compiler](https://docs.nginx.com/nginx-app-protect-waf/v5/admin-guide/compiler/), but for this lab we will use JSON files.
 
-La política de seguridad que usaremos se compone de:
-- Un archivo JSON con la configuración del formato del log del WAF
-- Un archivo JSON con la política base, el cual se referencia desde `nginx.conf`
-- Archivos JSON con referencias a varios bloques de configuración (opcionales), en nuestro caso tenemos:
-  - JSON para definición de "Server Technologies" usadas en el App a proteger
-  - JSON con lista blanca de direcciones IP a los cuales no se le aplica validación por parte del WAF
-  -  JSON con violaciones especificas a nivel protocolo HTTP
-  -  JSON con violaciones tipo Evasión
+The security policy used for this lab is composed of:
+- A JSON file with the WAF's logging format definition
+- A JSON file with the base security policy, this file is referenced from `nginx.conf`
+- Several optional JSON files referencing various parts or  blocks from the security policy, in this case:
+  - JSON for the "Server Technologies" used in the App we are going to protect
+  - JSON with a white-list of IP addresses, to wich the WAF will skip enforcing the WAF policy
+  -  JSON with specific HTTP Protocol violations.
+  -  JSON with Evasion-type violations
 
-Ahora procederemos a crear todos los archivos de configuración del WAF y activarlo para una de las aplicaciones desplegadas en un paso anterior
+Now, we will proceed to create all of the configuration files needed for the WAF policy and enable the WAF for one of the applications deployed in a previous step.
 
--  Crear archivo de log profile en `/etc/nginx/waf/`
+:bulb: Remember, all the files we need can be created/edited via CLI in the `nginx` server, or using vscode from the jumphost ubuntu-server
+
+-  Create the log profile definition in `/etc/nginx/waf/`
    ```sh
    sudo mkdir /etc/nginx/waf
    sudo vim /etc/nginx/waf/log-grafana.json
    ```
-   Este archivo usa un formato de log especifico para un dashboard de Grafana.\
-   Existe un formato `default` orientado a logs básicos via syslog y otros formatos predefinidos como `big-iq`, `arcsight`, `grpc`, `splunk` y `user-defined` que es el utilizado en este Lab.
+   This file use an specific log format suited for a Grafana Dashboard.\
+   There is also a `default` format recommended for basic logging using `syslog` and there are other pre-defined formats like `big-iq`, `arcsight`, `grpc`, `splunk` and `user-defined` (this is the one used in this lab).
+
+   The logging profile should look like this:
    ```json
    {
      "filter": {
@@ -444,7 +448,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
      }
    }
    ```
-- Crear archivo de la política de seguridad base en `/etc/nginx/waf/`
+- Create the base security policy in `/etc/nginx/waf/`
    ```sh
    sudo vim /etc/nginx/waf/NginxCustomPolicy.json
    ```
@@ -550,10 +554,10 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
        }
    }
    ```
-   Si revisamos la estructura del archivo podemos ver los diferentes bloques de configuración, como las violaciones, el modo de bloqueo (Blocking / Transparent), DataGuard (Validar data sensible expuesta por el servidor), response Pages (Pagina de respuesta a Violaciones), Códigos de respuesta HTTP validos y algunos otras configuraciones que se encuentran en la [documentación de la política declarativa de NGINX App Protect]( https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/)\
+   If we check the file structure, we can see the different configuration blocks or parts, like violations, enforcement mode (Blocking / Transparent), DataGuard (Sensitive Data exfiltration by the server), response Pages (response presented when there is a violation), valid HTTP response codes and some other options documented in our [NGINX App Protect declarative policy documentation]( https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/)\
    **https://docs.nginx.com/nginx-app-protect-waf/v4/declarative-policy/policy/**
 
-- Crear archivo de definición de "Server Technologies" para la política de seguridad en `/etc/nginx/waf/`
+- Create the "Server Technologies" definition in `/etc/nginx/waf/`
    ```sh
    sudo vim /etc/nginx/waf/server-technologies.json
    ```
@@ -573,7 +577,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
      }
    ]
    ```
-- Crear archivo de definición de "IP Whitelist" para la política de seguridad en `/etc/nginx/waf/`
+- Create the Whitelist configuration in `/etc/nginx/waf/`
    ```sh
    sudo vim /etc/nginx/waf/whitelist-ips.json
    ```
@@ -604,7 +608,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
        }
    ]
    ```
-- Crear archivo de definición de "HTTP Protocol Compliance" para la política de seguridad en `/etc/nginx/waf/`
+- Create the "HTTP Protocol Compliance" configuration in `/etc/nginx/waf/`
    ```sh
    sudo vim /etc/nginx/waf/http-protocols.json
    ```
@@ -650,7 +654,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
        }
    ]
    ```
-- Crear archivo de definición de "Técnicas de Evasion" para la política de seguridad en `/etc/nginx/waf/`
+- Create the Evasion Settings configuration file in `/etc/nginx/waf/`
    ```sh
    sudo vim /etc/nginx/waf/evasions.json
    ```
@@ -691,14 +695,14 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
        }
    ]
    ```
-- Como ultimo paso, activamos el WAF para la aplicación `f5app`, editando el archivo `/etc/nginx/conf.d/f5app.example.com.conf`
+- Last step is activate the WAF for the `f5app` application, editing the file `/etc/nginx/conf.d/f5app.example.com.conf`
 
-   Las configuraciones a nivel WAF adicionan a nivel de la directiva `server {}` de forma "global" (para toda la aplicación f5app) o en un `location` especifico. En este caso lo hacemos para toda la aplicación.
+   WAF configurations can be added at the `server {}` level and apply to all of the application ("global") or can be added inside a specific `location` only. In this case we will add the waf for all of the `f5app` application.
 
-   Como requisito, el modulo de WAF debe estar cargado a NGINX, esto lo hicimos en un paso anterior agregando la directiva `load_module` en `nginx.conf`
+   First, the prerequisite to use NAP is to load the WAF module inside `nginx.conf`, this was done in a previous step in this lab, by adding the directive `load_module` in `nginx.conf`
 
-   `app_protect_enable on;` Activa el WAF.\
-   `app_protect_security_log_enable on;` Activa logs para el WAF.\
+   `app_protect_enable on;` Activates the WAF.\
+   `app_protect_security_log_enable on;` Activates logging for the WAF.\
    `app_protect_security_log "/etc/nginx/waf/log-grafana.json" syslog:server=grafana.example.com:8515;` Indica el formato a usar para los logs de WAF y el destino. Puede usarse multiples veces para hacer logs a varios destinos.\
    `app_protect_policy_file "/etc/nginx/waf/NginxCustomPolicy.json";` Indica la politica de WAF a usar.
 
@@ -771,7 +775,7 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
 
   ![Grafana Dashboars](./grafana2.png)
 
-## 5. Auth con OpenID Connect (OIDC)
+## 5. Auth using OpenID Connect (OIDC)
 NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicación o el backend.\
 Esta integración es un proceso manual y se realiza por medio de un componente adicional que debe ser descargado y configurado.
 
