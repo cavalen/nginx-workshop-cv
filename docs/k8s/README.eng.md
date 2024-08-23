@@ -25,7 +25,7 @@
 > ![Webshell](./webshell.png)
 
 
-Abrir la consola del Jumphost y clonar el repositorio del Lab
+Inside the `ubuntu-desktop` open the console and clone the lab's repository
 ```
 git clone https://github.com/cavalen/nginx-workshop-cv/
 ```
@@ -36,7 +36,7 @@ cd nginx-workshop-cv/k8s
 
 ## 2. K8s Ingress Installation via Helm
 
-#### Instalar Helm:
+#### Install Helm:
 ```
 helm repo add nginx-stable https://helm.nginx.com/stable
 ```
@@ -44,9 +44,9 @@ helm repo add nginx-stable https://helm.nginx.com/stable
 helm repo update
 ```
 
-#### Instalar NGINX Ingress Controller via Helm:
+#### Install NGINX Ingress Controller via Helm:
   
-Es necesario crear un ConfigMap donde se especifique el resolver de DNS y unas configuraciones adicionales necesarias para OIDC en entornos donde hay mas de una replica del Ingress Controller.
+We need to create a ConfigMap with the DNS Resolver and some other specific configurations needed for the OIDC integration in environments with more than one Ingress Controller replicas.
 
 ```
 export DNSSVC=$(kubectl get svc -n kube-system kube-dns -o=jsonpath="{.spec.clusterIP}")
@@ -62,9 +62,11 @@ EOF
 )
 ```
 
-> :warning: Editar el valor de `controller.image.repository` por uno válido, ej. `controller.image.repository=myregistry/nginx-plus-ingress`
+> :bangbang: Edit the  `controller.image.repository` value for a valid one, example: `controller.image.repository=myregistry/nginx-plus-ingress`
 
-> :warning: Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0` 
+> :bangbang: Edit the `controller.image.tag` value for a valid one, example: `controller.image.tag=3.5.0` 
+
+Note: Helm uses a YAML file (`values.yaml`) for configuration, we will be using a different approach passing all the options as flags instead of editing the values.yaml file. 
 
 ```sh
 helm install nginx-ingress nginx-stable/nginx-ingress \
@@ -104,23 +106,22 @@ helm install nginx-ingress nginx-stable/nginx-ingress \
   --set "controller.service.customPorts[0].targetPort"=9114 \
   --set "controller.service.customPorts[0].protocol"=TCP
 ```
-Este comando despliega un ingress llamado `nginx-ingress`
+This command deploys an Ingress named `nginx-ingress`
 
-  > Algunas de las opciones del comando son:\
-  > `namespace=nginx-ingress` Instala sobre el namespace nginx-ingress y lo crea si no existe
-  > `controller.kind=deployment` Crea un despliegue tipo `Deployment`, la otra opcion es `DaemonSet`\
-  > `controller.replicaCount` Numero de replicas del Deploy del Ingress.\
-  > `controller.image.repository` Indica el repositorio donde se obtiene la imagen del Ingress\
-  > `controller.nginxplus` Indica que se usara NGINX Plus como Ingress, en lugar de NGINX OSS\
-  > `controller.appprotect.enable` Indica que se utilizara el WAF\
-  > `controller.enableCustomResources` Indica que se utilizaran los CRDs de Nginx\
-  > `controller.enableOIDC` Indica que la integración con OIDC estará disponible\
-  > `controller.nginxStatus.enable` Activa el dashboard de NGINX Plus
-  > `serviceInsight.create` Activa la funcionalidad de Service Insight, que es una funcion para dar visibilidad del estado de salud de los servicios y pods.
+  > Some of the options from the Helm command are:\
+  > `namespace=nginx-ingress` Namespace to install the Ingress Controller. (Create the NS if it does not exist)
+  > `controller.kind=deployment` Create de Ingress as a `Deployment`. Another option is to deploy as a `DaemonSet`\
+  > `controller.replicaCount` Number of replicas.\
+  > `controller.image.repository` Repository that Helm will use to pull the Ingress image\
+  > `controller.nginxplus` Indicates if the deployment will use NGINX Plus instead of NGINX OSS\
+  > `controller.appprotect.enable` Indicates if the NGINX App Protect WAF will be used\
+  > `controller.enableCustomResources` Indicates that CDRs will be deployed. If not enabled, only `Ingress` resources can be used\
+  > `controller.enableOIDC` Indicates if the OIDC integration will be used.\
+  > `controller.nginxStatus.enable` Activate the NGINX Plus Dashboard
+  > `serviceInsight.create` Activates the Service Insight functionality, this function enables visibilty and health state ot the application PODs.
 
-  
 
-Validar que el despliegue es correcto y el Ingress esta corriendo con el comando:
+Validate the deployment was successful and the Ingress is running with the following command:
 ```
 k get pod,svc -n nginx-ingress
 ```
@@ -202,29 +203,29 @@ spec:
           upstream: recommendations
           rewritePath: /api/recommendations
 ```
-Validar:
+Validate:
 ```sh
 k get vs -n brewz
 ```
 ![Virtual-Server1](./vs1.png)
 
-Probar la app en el Browser en **https://brewz.example.com**
+Test the App in the browser - **https://brewz.example.com**
 
-No tiene seguridad, solo se esta exponiendo la app
+There is no security, we are only publishing the app
 
 ## 5. Active Healt Checks
 
-Antes de hacer cambios al Ingress, simulamos un fallo en la aplicación (ej, responder con un 200 OK pero no lo que la aplicación debe responder)
+Before making changes to the Ingress, let's simulate an application failure (a 200 OK response, but not what the application should response)
 
-Para esto entramos por SSH al POD del frontend (spa) y editamos el web server:
+To do this, open an SSH connection to the application frontend POD (spa) and edit the web server:
 ```sh
 POD=$(kubectl get pod -n brewz -o custom-columns=:.metadata.name | grep spa | head -1); echo $POD
 ```
-Este comando nos pone en un shell en el pod `spa` de Brewz
+This command put us in a shell inside the `spa` pod.
 ```sh
 kubectl exec -it -n brewz $POD -- sh
 ```
-Editar Web Server:
+Edit the Web Server:
 ```sh
 cat <<EOF > /tmp/index.html
 <html>
@@ -237,32 +238,35 @@ cat <<EOF > /tmp/index.html
 </html>
 EOF
 ```
-Aplicar cambios y reiniciar el Web Server del POD:
+Apply changes and restart the Web Server inside the POD:
 ```sh
 sed -i 's/\/usr\/share\/nginx\/html;/\/tmp;/g' /etc/nginx/nginx.conf
 nginx -s reload
 exit
 ```
-Ir a **https://brewz.example.com**\
-La aplicación claramente esta respondiendo, pero no lo que esperamos.
+Browse to **https://brewz.example.com**\
+The application is responding, but not what it should.
 
-Adicionaremos un Health-check al Ingress para detectar este tipo de fallas, mas allá de un código de respuesta HTTP 500 del POD.\
-El cambio de la configuración respecto al anterior consiste 2 bloques, el primero espera del POD una respuesta 200 OK y la cadena "Brewz".\
-Si encuentra las 2 cosas en la respuesta se marca el POD como disponible.
-```
-  http-snippets: |
-    match brewzhealthcheck {
-      status 200;
-      body ~ "Brewz";
-    }
-```
-El segundo cambio consiste en aplicar el Health check al URL `/`, validando cada 5 segundos
-```
-    - path: /
-      location-snippets: |
-        health_check match=brewzhealthcheck interval=5s uri=/;
-```
-El manifiesto completo se ve asi:
+Now, let's add a Health-check to the Ingress definition, to detect this type of failures from the application (not necessarily a 500 Server Error response)
+
+The difference between the previous version and the new one with Active Health Checks consist of 2 things:
+* The first one expects a "200 OK" response from the POD and the string "Brewz".
+
+  If both things are found in the response, the POD is marked as available.
+  ```
+    http-snippets: |
+      match brewzhealthcheck {
+        status 200;
+        body ~ "Brewz";
+      }
+  ```
+* The second change is to apply the Health check to the URL `/`, validating every 5 seconds
+  ```
+      - path: /
+        location-snippets: |
+          health_check match=brewzhealthcheck interval=5s uri=/;
+  ```
+The full manifest looks like this:
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: VirtualServer
@@ -322,24 +326,25 @@ spec:
           upstream: recommendations
           rewritePath: /api/recommendations
 ```
-Aplicamos el manifiesto con Health Checks:
+Let's apply the manifesto with Health Checks:
 ```sh
 k apply -f 2-virtualserver-brewz.yaml -n brewz
 ```
 
-Probar el Health Check:
+Test the Application, now with Health Checks:
 
-Ir a **https://brewz.example.com**
+Go to **https://brewz.example.com**
 
-Como editamos el POD del Aplicativo y el Health Check busca la cadena "Brewz" y  no la encuentra, el Ingress responde con un código de error HTTP/502 (no hay PODs disponibles en el Backend)
+The application is in a failed state. Since we edited the Application POD and the Health Check is looking for the string "Brewz" and does not find it, the Ingress responds with an HTTP/502 error code (there are no PODs available in the Backend)
 
 ![502 Error](./brewz-502.png)
 
 ## 6. Error Management
 
-En este escenario buscamos que el Ingress intercepte este error 502 y no lo presente al usuario, sino que responda con algún contenido. Esto se logra por medio de una directiva llamada `errorPages`
+In this scenario we want the Ingress to intercept this 502 error and not present it to the user, and instead respond with some content. This is achieved through a directive called `errorPages`
 
-Se adiciona a la configuración existente esta directiva, interceptando errores 502 y 503 y respondiendo con un contenido estático. 
+This directive is added to the existing configuration, intercepting 502 and 503 errors and responding with static content (218 HTTP code).
+
 ```
       errorPages:
       - codes: [502, 503]
@@ -349,7 +354,7 @@ Se adiciona a la configuración existente esta directiva, interceptando errores 
 
 ```
 
-Revisemos el manifiesto completo que hace esto:
+Let's review the full manifest that does this:
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: VirtualServer
@@ -414,29 +419,29 @@ spec:
           upstream: recommendations
           rewritePath: /api/recommendations
 ```
-Aplicamos los cambios:
+Let's apply the changes:
 ```sh
 k apply -f 3-virtualserver-brewz.yaml -n brewz
 ```
-Volver a **https://brewz.example.com**
+Go back to **https://brewz.example.com**
 
-Validar el mensaje de error, ahora modificado por el Ingress
+Validate the error message, now modified by the Ingress
 
-Por último, eliminar el POD "fallido"
+:warning: Finally, delete the "failed" POD
 ```sh
 k delete pod $POD -n brewz
 ```
 
 ## 7. Web Application Firewall (WAF)
 
-El siguiente paso en el camino a mejorar la experiencia del usuario y la seguridad de la aplicación Brewz es activar seguridad en L7 por medio del WAF.
+The next step on the road to improve the user experience and security of the Brewz app is to enable Layer 7 security using the WAF.
 
-Aplicamos una política de WAF a las rutas `/` y `/api`
+We will apply a WAF policy to the `/` and `/api` paths
 
-Primero debemos aplicar la política de seguridad:\
-La policy es muy similar a la desplegada en el lab de NGINX Plus, pero en este caso son objetos de K8s (CRDs)
+First we need to apply the security policy:\
+The policy is very similar to the one deployed in the NGINX Plus lab, but in this case it is a K8s object (CRD)
 
-En la carpeta del laboratorio `k8s/waf` se encuentra la política de seguridad y los objetos relacionados a esta. Aplicar los manifiestos en orden:
+In the `k8s/waf` folder you will find the security policy and the objects related to it. Apply the manifests in order:
 
 ```sh
 k apply -f waf/1-waf-ap-logconf-grafana.yaml -n brewz
@@ -444,7 +449,7 @@ k apply -f waf/2-waf-ap-custom-signatures.yaml -n brewz
 k apply -f waf/3-waf-ap-policy-spa.yaml -n brewz
 k apply -f waf/4-waf-policy-spa.yaml -n brewz
 ```
-1-waf-ap-logconf-grafana.yaml
+### 1-waf-ap-logconf-grafana.yaml
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APLogConf
@@ -463,7 +468,7 @@ spec:
     request_type: illegal
 ```
 
-2-waf-ap-custom-signatures.yaml
+### 2-waf-ap-custom-signatures.yaml
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APUserSig
@@ -485,7 +490,7 @@ spec:
   tag: BadActors
 ```
 
-3-waf-ap-policy-spa.yaml
+### 3-waf-ap-policy-spa.yaml
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APPolicy
@@ -599,7 +604,7 @@ spec:
       link: "https://raw.githubusercontent.com/cavalen/acme/master/whitelist-ips.json"
 ```
 
-4-waf-policy-spa.yaml
+### 4-waf-policy-spa.yaml
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
@@ -616,8 +621,8 @@ spec:
       logDest: "syslog:server=grafana.example.com:8515"
 ```
 
-Desplegar por ultimo el VirtualServer con los cambios y las política de WAF activa:
-El cambio respecto a la configuración anterior es la adición de la directiva policies en las rutas `/` y `/api`:
+Finally, deploy the VirtualServer with the changes and the active WAF policy:\
+The change with respect to the previous configuration is the addition of the `policies` directive in the `/` and `/api` paths:
 ```
 policies:
   - name: waf-policy-spa
@@ -691,35 +696,34 @@ spec:
           rewritePath: /api/recommendations
 ```
 
-Aplicamos los cambios:
+Apply the changes:
 ```sh
 k apply -f 4-virtualserver-brewz.yaml -n brewz
 ```
 
-Validar, en **https://brewz.example.com**, visitar el primer item de la tienda y comprobar que existe un numero de tarjeta de crédito ofuscado
+Validate in **https://brewz.example.com**, Visit the first item in the store and see that there is an obfuscated credit card number 
 
-Intentar algún ataque sencillo como XSS o SQLi:
+Try some basic attacks like XSS or SQLi:
 
-Adicionar al path un XSS `https://brewz.example.com/<script>`\
-Adicionar al path un SQLi `https://brewz.example.com/?param='or 1=1#'`
+XSS: `https://brewz.example.com/<script>`\
+SQLi: `https://brewz.example.com/?param='or 1=1#'`
 
 
 ## 8. JWT Auth
 
-Aplicamos una política de JWT llamada `jwt-policy-brewz`
+We will apply a JWT policy called `jwt-policy-brewz`
 
-En la carpeta del laboratorio `k8s/jwt` se encuentra la política de autenticación con tokens y un secret correspondiente al JWK (Key)
+In the `k8s/jwt` folder you will find the authentication policy with tokens and a secret corresponding to the JWK (Key)
 
-Aplicamos las políticas de JWT, primero el secret, luego la "Policy"
+Let's apply the JWT policies, first the secret, then the "Policy"
+
 ```sh
 k apply -f jwt/1-jwt-secret.yaml -n brewz
 k apply -f jwt/2-jwt-policy.yaml -n brewz
 ```
-```
-k apply -f 5-virtualserver-brewz.yaml -n brewz
-```
 
-El archivo `jwt/1-jwt-secret.yaml` es básicamente un K8s-secret, donde se almacena el JSON Web Key. El JWK es una estructura en JSON que representa un set de llaves publicas, usadas para verificar el Token (JWT) creado por un authorization server.
+The `jwt/1-jwt-secret.yaml` file is basically a K8s-secret, where the JSON Web Key is stored. The JWK is a JSON structure that represents a set of public keys, used to verify the token (JWT) created by an authorization server.
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -730,7 +734,7 @@ data:
   jwk: eyJrZXlzIjoKICAgIFt7CiAgICAgICAgImsiOiJabUZ1ZEdGemRHbGphbmQwIiwKICAgICAgICAia3R5Ijoib2N0IiwKICAgICAgICAia2lkIjoiMDAwMSIKICAgIH1dCn0K
 ```
 
-El archivo `jwt/2-jwt-policy.yaml` es la política del Ingress, referencia el secreto anterior y lo toma del request del cliente desde un parámetro `$http_token`. En NGINX `$http_token` representa el Header `token` en el request HTTP.
+The `jwt/2-jwt-policy.yaml` file is the JWT Ingress policy, it references the previous secret and obtains it from the client request from the `$http_token` parameter. In NGINX `$http_token` represents the `token` Header in the HTTP request.
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
@@ -742,46 +746,49 @@ spec:
     secret: jwk-secret
     token: $http_token
 ```
-Desplegamos los cambios en el VirtualServer con la política de Auth con JWT para el endpoint `/api/recommendations`:
+Asociaremos la politica `jwt-policy-brewz` al endpoint `/api/recommendations` por medio de la directiva `policies`:
+> ```
+>     - path: /api/recommendations
+>       policies:
+>         - name: jwt-policy-brewz
+> ```
+Finally we apply the updated Ingress manifest with the JWT Authentication policy:
 ```
-    - path: /api/recommendations
-      policies:
-        - name: jwt-policy-brewz
+k apply -f 5-virtualserver-brewz.yaml -n brewz
 ```
-Las pruebas para la validación de Auth con JWT las hacemos desde el CLI con `curl`
+The tests to validate JWT Authentication are done from the CLI with `curl`
 
-Endpoint que no tiene autenticación:
+Endpoint with no authentication:
 ```sh
 curl -s -k https://brewz.example.com/api/inventory | jq
 ```
 
-Vamos al endpoint /recommendations que tiene autenticación
+ Endpoint `/recommendations` with authentication (response should be a 401 Error):
 ```sh
 curl -s -k https://brewz.example.com/api/recommendations
 ```
 
-Probamos con un Token invalido, enviado en el Header *token*: 
+Let's try with an invalid token, sent in the Header *token* (response should be a 401 Error): 
 ```sh
 curl -k -i -H "token: `cat jwt/token-bad.jwt`" https://brewz.example.com/api/recommendations
 ```
 
-Probamos con un token válido, enviado en el Header *token*:
+Let's try with an valid token, sent in the Header *token*:
 ```sh
 curl -k -s -H "token: `cat jwt/token-good.jwt`" https://brewz.example.com/api/recommendations | jq
 ```
 
 ## 9. Auth using OpenID Connect (OIDC)
 
-Vamos a crear un nuevo endpoint `/admin` en el Ingress que responda con un contenido estático. A este endpoint le asociamos una política de OIDC llamada `oidc-policy-brewz` que pida credenciales validas a Keycloak antes de llevar al usuario a este endpoint.
+Let's create a new endpoint `/admin` in the Ingress definition that responds with static content. Then we will associate an OIDC policy called `oidc-policy-brewz` to this endpoint. This will result in a call to Keycloak asking for valid credentials before taking the user to this endpoint.
 
-Primero creamos la política de OIDC y el Client Secret para hacer la interacción con Keycloak. Los manifiestos se encuentran en la carpeta `k8s/oidc`
-
+First we need to create the OIDC policy and the Client Secret to interact with Keycloak. The manifests are located in the `k8s/oidc` folder
 ```sh
 k apply -f oidc/1-oidc-client-secret.yaml -n brewz
 k apply -f oidc/2-oidc-brewz.yaml -n brewz
 ```
 
-El archivo `oidc/1-oidc-client-secret.yaml` es el Client-Secret necesario para interactuar con el IdP
+The `oidc/1-oidc-client-secret.yaml` file is the Client-Secret needed to interact with the IdP
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -791,8 +798,10 @@ type: nginx.org/oidc
 data:
   client-secret: MTIzNDU2Nzg5MEFCQ0RFRg==
 ```
-El archivo `oidc/2-oidc-brewz.yaml` es la política de OIDC, con los endpoints necesarios para intercambiar información con el IdP\
-El administrador de Identity Provider debe conocer estos valores, adicionalmente el URL de `openid-configurations` (**http://keycloak.example.com/realms/master/.well-known/openid-configuration**) nos puede ayudar a obtener esta información.
+The `oidc/2-oidc-brewz.yaml` file is the OIDC policy, with the endpoints needed to exchange information with the IdP
+
+The Identity Provider administrator must know these values, additionally the `openid-configurations` URL (**http://keycloak.example.com/realms/master/.well-known/openid-configuration**) can help us obtain this information.
+
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
@@ -808,13 +817,13 @@ spec:
     scope: openid+profile+email
     accessTokenEnable: true
 ```
-Aplicamos los cambios en el VirtualServer
+Let's apply the VirtualServer changes
 ```sh
 k apply -f 6-virtualserver-brewz.yaml -n brewz
 ```
-Los cambios realizados al manifiesto del VirtualServer son:
-  - Un nuevo path `/admin`, que responde con un contenido estático.
-  - Adición de la política `oidc-policy-brewz` al endpoint
+The changes made to the VirtualServer manifest are:
+- A new `/admin` path, which responds with static content.
+- Addition of the `oidc-policy-brewz` policy to the `/admin` path
 ```
     - path: /admin
       policies:
@@ -826,7 +835,7 @@ Los cambios realizados al manifiesto del VirtualServer son:
           body: "<center><h1><br>Para estar aca requieres autenticarte con Keycloak !!</h1></center>"
 ```
 
-El manifiesto del VirtualServer completo se ve asi:
+The updated VirtualServer manifest:
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: VirtualServer
@@ -905,4 +914,6 @@ spec:
           type: text/html
           body: "<center><h1><br>Para estar aca requieres autenticarte con Keycloak !!</h1></center>"
 ```
-En el browser vamos a **https://brewz.example.com/admin** y debe solicitar autenticación a Keycloak, usar credenciales `test:test`, una vez validado debe mostrar el contenido del endpoint.
+In the browser go to **https://brewz.example.com/admin** and it should request authentication from Keycloak, use the credentials `test:test`, once validated it should show the content of the endpoint.
+
+- FIN -

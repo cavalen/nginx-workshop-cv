@@ -69,7 +69,7 @@ EOF
 )
 ```
 
-> :warning: Editar el valor de `controller.image.repository` por uno válido, ej. `controller.image.repository=myregistry/nginx-plus-ingress`
+> :bangbang: Editar el valor de `controller.image.repository` por uno válido, ej. `controller.image.repository=myregistry/nginx-plus-ingress`
 
 > :warning: Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0` 
 
@@ -624,7 +624,7 @@ spec:
 ```
 
 Desplegar por ultimo el VirtualServer con los cambios y las política de WAF activa:
-El cambio respecto a la configuración anterior es la adición de la directiva policies en las rutas `/` y `/api`:
+El cambio respecto a la configuración anterior es la adición de la directiva `policies` en las rutas `/` y `/api`:
 ```
 policies:
   - name: waf-policy-spa
@@ -703,17 +703,17 @@ Aplicamos los cambios:
 k apply -f 4-virtualserver-brewz.yaml -n brewz
 ```
 
-Validar, en **https://brewz.example.com**, visitar el primer item de la tienda y comprobar que existe un numero de tarjeta de crédito ofuscado
+Validar, en **https://brewz.example.com**, visitar el primer item de la tienda y comprobar que existe un numero de tarjeta de crédito ofuscado.
 
 Intentar algún ataque sencillo como XSS o SQLi:
 
-Adicionar al path un XSS `https://brewz.example.com/<script>`\
-Adicionar al path un SQLi `https://brewz.example.com/?param='or 1=1#'`
+XSS: `https://brewz.example.com/<script>`\
+SQLi: `https://brewz.example.com/?param='or 1=1#'`
 
 
 ## 8. JWT Auth
 
-Aplicamos una política de JWT llamada `jwt-policy-brewz`
+Aplicaremos una política de JWT llamada `jwt-policy-brewz`
 
 En la carpeta del laboratorio `k8s/jwt` se encuentra la política de autenticación con tokens y un secret correspondiente al JWK (Key)
 
@@ -721,9 +721,6 @@ Aplicamos las políticas de JWT, primero el secret, luego la "Policy"
 ```sh
 k apply -f jwt/1-jwt-secret.yaml -n brewz
 k apply -f jwt/2-jwt-policy.yaml -n brewz
-```
-```
-k apply -f 5-virtualserver-brewz.yaml -n brewz
 ```
 
 El archivo `jwt/1-jwt-secret.yaml` es básicamente un K8s-secret, donde se almacena el JSON Web Key. El JWK es una estructura en JSON que representa un set de llaves publicas, usadas para verificar el Token (JWT) creado por un authorization server.
@@ -737,7 +734,7 @@ data:
   jwk: eyJrZXlzIjoKICAgIFt7CiAgICAgICAgImsiOiJabUZ1ZEdGemRHbGphbmQwIiwKICAgICAgICAia3R5Ijoib2N0IiwKICAgICAgICAia2lkIjoiMDAwMSIKICAgIH1dCn0K
 ```
 
-El archivo `jwt/2-jwt-policy.yaml` es la política del Ingress, referencia el secreto anterior y lo toma del request del cliente desde un parámetro `$http_token`. En NGINX `$http_token` representa el Header `token` en el request HTTP.
+El archivo `jwt/2-jwt-policy.yaml` es la política del Autenticacion JWT del Ingress, referencia el secreto anterior y lo toma del request del cliente desde un parámetro `$http_token`. En NGINX `$http_token` representa el Header `token` en el request HTTP.
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
@@ -749,11 +746,16 @@ spec:
     secret: jwk-secret
     token: $http_token
 ```
-Desplegamos los cambios en el VirtualServer con la política de Auth con JWT para el endpoint `/api/recommendations`:
+Asociaremos la politica `jwt-policy-brewz` al endpoint `/api/recommendations` por medio de la directiva `policies`:
+
+> ```
+>     - path: /api/recommendations
+>       policies:
+>         - name: jwt-policy-brewz
+> ```
+Finalmente aplicamos el manifiesto actualizado del Ingress con la politica de Autenticacion con JWT:
 ```
-    - path: /api/recommendations
-      policies:
-        - name: jwt-policy-brewz
+k apply -f 5-virtualserver-brewz.yaml -n brewz
 ```
 Las pruebas para la validación de Auth con JWT las hacemos desde el CLI con `curl`
 
