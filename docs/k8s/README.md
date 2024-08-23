@@ -26,7 +26,7 @@ En la guía se utilizará `vim` para crear y modificar los archivos de configura
 > [!NOTE]
 > Copiar y Pegar entre el servidor `ubuntu-desktop` y el equipo local puede resultar en errores de formato del texto copiado, lo que se traducen en errores a la hora de desplegar las configuraciones.
 >
-> 
+>
 > Se recomienda ejecutar el laboratorio en su totalidad desde el RDP `ubuntu-desktop` (guia + CLI) o usar la opcion de UDF de WebShell al servidor `ubuntu-desktop` y seguir la guia desde el PC local.
 >
 > ![Webshell](./webshell.png)
@@ -52,7 +52,7 @@ helm repo update
 ```
 
 #### Instalar NGINX Ingress Controller via Helm:
-  
+
 Es necesario crear un ConfigMap donde se especifique el resolver de DNS y unas configuraciones adicionales necesarias para OIDC en entornos donde hay mas de una replica del Ingress Controller.
 
 ```
@@ -71,7 +71,7 @@ EOF
 
 > :bangbang: Editar el valor de `controller.image.repository` por uno válido, ej. `controller.image.repository=myregistry/nginx-plus-ingress`
 
-> :warning: Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0` 
+> :bangbang: Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0`
 
 ```sh
 helm install nginx-ingress nginx-stable/nginx-ingress \
@@ -125,7 +125,7 @@ Este comando despliega un ingress llamado `nginx-ingress`
   > `controller.nginxStatus.enable` Activa el dashboard de NGINX Plus
   > `serviceInsight.create` Activa la funcionalidad de Service Insight, que es una funcion para dar visibilidad del estado de salud de los servicios y pods.
 
-  
+
 
 Validar que el despliegue es correcto y el Ingress esta corriendo con el comando:
 ```
@@ -346,7 +346,7 @@ Como editamos el POD del Aplicativo y el Health Check busca la cadena "Brewz" y 
 
 En este escenario buscamos que el Ingress intercepte este error 502 y no lo presente al usuario, sino que responda con algún contenido. Esto se logra por medio de una directiva llamada `errorPages`
 
-Se adiciona a la configuración existente esta directiva, interceptando errores 502 y 503 y respondiendo con un contenido estático. 
+Se adiciona a la configuración existente esta directiva, interceptando errores 502 y 503 y respondiendo con un contenido estático.
 ```
       errorPages:
       - codes: [502, 503]
@@ -769,7 +769,7 @@ Vamos al endpoint /recommendations que tiene autenticación
 curl -s -k https://brewz.example.com/api/recommendations
 ```
 
-Probamos con un Token invalido, enviado en el Header *token*: 
+Probamos con un Token invalido, enviado en el Header *token*:
 ```sh
 curl -k -i -H "token: `cat jwt/token-bad.jwt`" https://brewz.example.com/api/recommendations
 ```
