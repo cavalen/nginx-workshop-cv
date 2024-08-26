@@ -708,7 +708,7 @@ Validar, en **https://brewz.example.com**, visitar el primer item de la tienda y
 Intentar algún ataque sencillo como XSS o SQLi:
 
 XSS: `https://brewz.example.com/<script>`\
-SQLi: `https://brewz.example.com/?param='or 1=1#'`
+SQLi: `https://brewz.example.com/?param=' or 1=1#'`
 
 
 ## 8. JWT Auth
