@@ -400,6 +400,9 @@ Reload NGINX configuration:
 
   **NOTE:** Reponse headers (add_header) can be seen using the Browser's Developer Tools.
 
+  Reload NGINX Configuration\
+  Reload the website "echo" y validate you can see the Headers in the application.
+
 ---
 
 ## 4. Web Application Firewall (WAF)
