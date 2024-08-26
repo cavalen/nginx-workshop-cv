@@ -397,6 +397,9 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
 
   **NOTA:** Los headers adicionados en la respuesta del server (add_header) se pueden ver usando la herramienta "Developer Tools" del Browser.
 
+  Recargar la configuración de NGINX
+  Recargar la página "echo" y validar que los headers sean mostrados por la aplicación.
+
 ---
 
 ## 4. Web Application Firewall (WAF)
