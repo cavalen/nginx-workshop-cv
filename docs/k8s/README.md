@@ -13,22 +13,17 @@
 
 ## 1. Pre-requisitos
 
-**Nota:** La instalación y la configuración de NGINX Ingress Controller se realizar por linea de comandos usando `kubectl` y manifiestos en formato YAML.
-Se recomienda tener alguna experiencia en el CLI de Linux y Kubernetes.
-
-En la guía se utilizará `vim` para crear y modificar los archivos de configuración, sin embargo el editor de su preferencia puede ser utilizado.
-
-**Nota:** En la linea de comandos hay un alias para `kubectl`. Los comandos de la guía se harán con el alias `k`
-
 > [!NOTE]
-> **IMPORTANTE:** Los pasos de configuración de esta guía se hacen sobre el servidor `ubuntu-desktop`, que es el servidor RDP. No hay necesidad de hacer SSH a otro equipo para esta sección del Lab.
+> :warning: **Nota:** La instalación y la configuración de NGINX Ingress Controller se realizar por linea de comandos usando `kubectl` y manifiestos en formato YAML.
+> Se recomienda tener alguna experiencia en el CLI de Linux y Kubernetes.
 
-> [!NOTE]
+> :warning: **Nota:** En la linea de comandos hay un alias para `kubectl`. Los comandos de la guía se harán con el alias `k`
+
+> :warning: **IMPORTANTE:** Los pasos de configuración de esta guía se hacen sobre el servidor `ubuntu-desktop`, que es el servidor RDP. No hay necesidad de hacer SSH a otro equipo para esta sección del Lab.
+
 > Copiar y Pegar entre el servidor `ubuntu-desktop` y el equipo local puede resultar en errores de formato del texto copiado, lo que se traducen en errores a la hora de desplegar las configuraciones.
 >
->
 > Se recomienda ejecutar el laboratorio en su totalidad desde el RDP `ubuntu-desktop` (guia + CLI) o usar la opcion de UDF de WebShell al servidor `ubuntu-desktop` y seguir la guia desde el PC local.
->
 > ![Webshell](./webshell.png)
 
 
