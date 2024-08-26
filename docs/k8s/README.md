@@ -394,7 +394,7 @@ spec:
       - codes: [502, 503]
         return:
           code: 218
-          body: "<center><h1>Tenemos inconvenientes tecnicos y estamos trabajando para solucionarlo ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
+          body: "<center><h1>We are having technical issues and working to bring the service back ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
       action:
         pass: spa
     - path: /api
@@ -681,7 +681,7 @@ spec:
       - codes: [502, 503]
         return:
           code: 218
-          body: "<center><h1>Tenemos inconvenientes tecnicos y estamos trabajando para solucionarlo ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
+          body: "<center><h1>We are having technical issues and working to bring the service back ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
       action:
         pass: spa
     - path: /api
@@ -888,7 +888,7 @@ spec:
       - codes: [502, 503]
         return:
           code: 218
-          body: "<center><h1>Tenemos inconvenientes tecnicos y estamos trabajando para solucionarlo ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
+          body: "<center><h1>We are having technical issues and working to bring the service back ;) .. </h1><p> <img src='https://raw.githubusercontent.com/cavalen/acme/master/problems.png'/></p></center>"
       action:
         pass: spa
     - path: /api
