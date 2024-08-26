@@ -303,8 +303,7 @@ Los archivos de configuración de los sitios, se recomienda crearlos en la ruta 
   En el Dashboard de NGINX podemos ver también los health checks realizados y el estado del servidor
   ![Dashboard f5app](./f5app-dashboard.png)
 
-  > [!NOTE]
-  > ### <mark>**Reversar los cambios en el Health Check (body = F5 K8S vLab) y recargar la configuración de nginx antes de continuar**</mark>
+  > ### :warning::warning:<mark>**Reversar los cambios en el Health Check (body = F5 K8S vLab) y recargar la configuración de nginx antes de continuar**</mark>
     ```
   match f5app_health {
       status 200;
