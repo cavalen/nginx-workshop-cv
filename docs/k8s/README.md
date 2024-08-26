@@ -451,7 +451,7 @@ k apply -f waf/2-waf-ap-custom-signatures.yaml -n brewz
 k apply -f waf/3-waf-ap-policy-spa.yaml -n brewz
 k apply -f waf/4-waf-policy-spa.yaml -n brewz
 ```
-1-waf-ap-logconf-grafana.yaml
+### 1-waf-ap-logconf-grafana.yaml
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APLogConf
@@ -470,7 +470,7 @@ spec:
     request_type: illegal
 ```
 
-2-waf-ap-custom-signatures.yaml
+### 2-waf-ap-custom-signatures.yaml
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APUserSig
@@ -492,7 +492,7 @@ spec:
   tag: BadActors
 ```
 
-3-waf-ap-policy-spa.yaml
+### 3-waf-ap-policy-spa.yaml
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APPolicy
@@ -606,7 +606,7 @@ spec:
       link: "https://raw.githubusercontent.com/cavalen/acme/master/whitelist-ips.json"
 ```
 
-4-waf-policy-spa.yaml
+### 4-waf-policy-spa.yaml
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
