@@ -706,7 +706,7 @@ Validate in **https://brewz.example.com**, Visit the first item in the store and
 Try some basic attacks like XSS or SQLi:
 
 XSS: `https://brewz.example.com/<script>`\
-SQLi: `https://brewz.example.com/?param='or 1=1#'`
+SQLi: `https://brewz.example.com/?param=' or 1=1#'`
 
 
 ## 8. JWT Auth
