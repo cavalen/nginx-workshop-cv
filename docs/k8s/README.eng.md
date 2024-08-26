@@ -5,11 +5,11 @@
 [2. K8s Ingress Installation via Helm](#2-k8s-ingress-installation-via-helm)\
 [3. BREWZ App Installation](#3-brewz-app-installation)\
 [4. Publish an Ingress (Virtual Server)](#4-publish-an-ingress-virtual-server)
-[4. Active Healt Checks](#5-active-healt-checks)\
-[5. Error Management](#6-error-management)\
-[6. Web Application Firewall (WAF)](#7-web-application-firewall-waf)\
-[7. JWT Auth](#8-jwt-auth)\
-[8. Auth using OpenID Connect (OIDC)](#9-auth-using-openid-connect-oidc)
+[5. Active Healt Checks](#5-active-healt-checks)\
+[6. Error Management](#6-error-management)\
+[7. Web Application Firewall (WAF)](#7-web-application-firewall-waf)\
+[8. JWT Auth](#8-jwt-auth)\
+[9. Auth using OpenID Connect (OIDC)](#9-auth-using-openid-connect-oidc)
 
 ## 1. Prerequisites
 
@@ -19,9 +19,9 @@
 
 > :warning: **Note:** Using the CLI there is an alias for `kubectl`. The instructions use the alias `k`.
 
-> **IMPORTANT:** All the steps from this guide are done in the machine `ubuntu-desktop` (RDP Server). There is no need to do SSH to another machine for this section of the Lab.
+>  :warning: **IMPORTANT:** All the steps from this guide are done in the machine `ubuntu-desktop` (RDP Server). There is no need to do SSH to another machine for this section of the Lab.
 
-> The Remote Desktop connection can cause difficulties when copying and pasting text from the guide. Try to follow the guide and running the CLI commands from the `ubuntu-desktop` RDP client or use the Webshell access to run the CLI commands and the RDP session to browse the applications. 
+> The Remote Desktop connection can cause difficulties when copying and pasting text from the guide. Try to follow the guide and running the CLI commands from the `ubuntu-desktop` RDP client or use the Webshell access to run the CLI commands and the RDP session to browse the applications.
 > ![Webshell](./webshell.png)
 
 
@@ -45,7 +45,7 @@ helm repo update
 ```
 
 #### Install NGINX Ingress Controller via Helm:
-  
+
 We need to create a ConfigMap with the DNS Resolver and some other specific configurations needed for the OIDC integration in environments with more than one Ingress Controller replicas.
 
 ```
@@ -64,9 +64,9 @@ EOF
 
 > :bangbang: Edit the  `controller.image.repository` value for a valid one, example: `controller.image.repository=myregistry/nginx-plus-ingress`
 
-> :bangbang: Edit the `controller.image.tag` value for a valid one, example: `controller.image.tag=3.5.0` 
+> :bangbang: Edit the `controller.image.tag` value for a valid one, example: `controller.image.tag=3.5.0`
 
-Note: Helm uses a YAML file (`values.yaml`) for configuration, we will be using a different approach passing all the options as flags instead of editing the values.yaml file. 
+Note: Helm uses a YAML file (`values.yaml`) for configuration, we will be using a different approach passing all the options as flags instead of editing the values.yaml file.
 
 ```sh
 helm install nginx-ingress nginx-stable/nginx-ingress \
@@ -450,6 +450,8 @@ k apply -f waf/3-waf-ap-policy-spa.yaml -n brewz
 k apply -f waf/4-waf-policy-spa.yaml -n brewz
 ```
 ### 1-waf-ap-logconf-grafana.yaml
+This manifest contains the log configuration such as the format and types of **request** to send to the log (illegal), in this case a specific log format is used for a Grafana dashboard.\
+There is a `default` format suited to basic logs via syslog and other predefined formats such as `big-iq`, `arcsight`, `grpc`, `splunk` and `user-defined` which is the one used in this Lab.
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APLogConf
@@ -469,6 +471,7 @@ spec:
 ```
 
 ### 2-waf-ap-custom-signatures.yaml
+This manifest configures user signatures, which allow you to define, for example, a text string that triggers the signature and is blocked by the WAF. In this case, a request with the word `hackerz` triggers this attack signature.
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APUserSig
@@ -491,6 +494,15 @@ spec:
 ```
 
 ### 3-waf-ap-policy-spa.yaml
+This is the main security policy and includes several sections such as (among others):
+* Type of blocking (enforcementMode) which can be `transparent` or `blocking`
+* User signatures
+* Violations
+* BOT blocking settings, based on signatures
+* Evasions
+* Dataguard (obfuscation/blocking of sensitive information provided by the server)
+* WAF response page in case of a violation
+* Whitelisted IPs
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APPolicy
@@ -605,6 +617,7 @@ spec:
 ```
 
 ### 4-waf-policy-spa.yaml
+This manifest defines the security policy that references the other WAF configurations and the destination and format of the logs.
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
@@ -701,7 +714,7 @@ Apply the changes:
 k apply -f 4-virtualserver-brewz.yaml -n brewz
 ```
 
-Validate in **https://brewz.example.com**, Visit the first item in the store and see that there is an obfuscated credit card number 
+Validate in **https://brewz.example.com**, Visit the first item in the store and see that there is an obfuscated credit card number
 
 Try some basic attacks like XSS or SQLi:
 
@@ -768,7 +781,7 @@ curl -s -k https://brewz.example.com/api/inventory | jq
 curl -s -k https://brewz.example.com/api/recommendations
 ```
 
-Let's try with an invalid token, sent in the Header *token* (response should be a 401 Error): 
+Let's try with an invalid token, sent in the Header *token* (response should be a 401 Error):
 ```sh
 curl -k -i -H "token: `cat jwt/token-bad.jwt`" https://brewz.example.com/api/recommendations
 ```

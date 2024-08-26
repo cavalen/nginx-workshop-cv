@@ -447,6 +447,8 @@ k apply -f waf/3-waf-ap-policy-spa.yaml -n brewz
 k apply -f waf/4-waf-policy-spa.yaml -n brewz
 ```
 ### 1-waf-ap-logconf-grafana.yaml
+Este manifiesto contiene la configuración de logs del WAF como el formato y los tipos de **request** a enviar al log (ilegales), en este caso se usa un formato de log especifico para un dashboard de Grafana.\
+Existe un formato `default` orientado a logs básicos via syslog y otros formatos predefinidos como `big-iq`, `arcsight`, `grpc`, `splunk` y `user-defined` que es el utilizado en este Lab.
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APLogConf
@@ -466,6 +468,7 @@ spec:
 ```
 
 ### 2-waf-ap-custom-signatures.yaml
+Este manifiesto configura firmas de ataque de usuario (user signatures), donde se permite definir por ejemplo una cadena de texto que active la firma y sea bloqueada por el WAF. En este caso un request con la palabra `hackerz` activa esta firma de ataque.
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APUserSig
@@ -488,6 +491,15 @@ spec:
 ```
 
 ### 3-waf-ap-policy-spa.yaml
+Esta es la politica de seguridad principal del WAF e incluye varias secciones como son (entre otras):
+  * Tipo de bloqueo (enforcementMode) que puede ser `transparent` o `blocking`
+  * Firmas de usuario
+  * Violaciones
+  * Configuraciones de bloqueo de BOT basado en firmas
+  * Evasiones
+  * Dataguard (ofuscacion/bloqueo de informacion sensible entergada por el servidor)
+  * Página de respuesta del WAF en caso de una violacion
+  * IP en listas blancas
 ```yaml
 apiVersion: appprotect.f5.com/v1beta1
 kind: APPolicy
@@ -602,6 +614,7 @@ spec:
 ```
 
 ### 4-waf-policy-spa.yaml
+Este manifiesto define la politica de seguridad que referencia a las demás configuraciones del WAF y destino y formato de los logs
 ```yaml
 apiVersion: k8s.nginx.org/v1
 kind: Policy
