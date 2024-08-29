@@ -4,7 +4,7 @@
 [1. Pre-requisitos](#1-pre-requisitos)\
 [2. Instalación K8s Ingress via Helm](#2-instalación-k8s-ingress-via-helm)\
 [3. Instalar App BREWZ](#3-instalar-app-brewz)\
-[4. Publicar un Ingress (Virtual Server)](#4-publicar-un-ingress-virtual-server)
+[4. Publicar un Ingress (Virtual Server)](#4-publicar-un-ingress-virtual-server)\
 [5. HealtChecks Activos](#5-healtchecks-activos)\
 [6. Manejo de Errores](#6-manejo-de-errores)\
 [7. Web Application Firewall (WAF)](#7-web-application-firewall-waf)\
