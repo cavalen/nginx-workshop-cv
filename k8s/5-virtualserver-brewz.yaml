@@ -4,7 +4,7 @@ metadata:
   name: brewz
   namespace: brewz
   annotations:
-    version: "4. WAF"
+    version: "5. JWT Auth"
 spec:
   host: brewz.example.com
   tls:

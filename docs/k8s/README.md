@@ -853,7 +853,7 @@ metadata:
   name: brewz
   namespace: brewz
   annotations:
-    version : "4. WAF"
+    version : "6. OIDC"
 spec:
   host: brewz.example.com
   tls:
