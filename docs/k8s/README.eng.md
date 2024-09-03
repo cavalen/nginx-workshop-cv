@@ -49,7 +49,7 @@ helm repo update
 We need to create a ConfigMap with the DNS Resolver and some other specific configurations needed for the OIDC integration in environments with more than one Ingress Controller replicas.
 
 ```
-export DNSSVC=$(kubectl get svc -n kube-system kube-dns -o=jsonpath="{.spec.clusterIP}")
+export DNSSVC=$(kubectl get svc -n kube-system kube-dns -o=jsonpath="{.spec.clusterIP}"); echo $DNSSVC
 ```
 ```
 export CONFIGMAP_DATA=$(cat <<EOF
