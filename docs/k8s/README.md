@@ -106,7 +106,9 @@ helm install nginx-ingress nginx-stable/nginx-ingress \
   --set "controller.service.customPorts[0].targetPort"=9114 \
   --set "controller.service.customPorts[0].protocol"=TCP
 ```
-Este comando despliega un ingress llamado `nginx-ingress`
+Este comando despliega un ingress llamado `nginx-ingress`\
+>> :warning: NOTA: Si a la hora de desplegar el Ingress se presenta un error, es necesario "desinstalar" el despliegue fallido antes de intentarlo nuevamente, con el comando `helm uninstall nginx-ingress -n nginx-ingress`
+
 
   > Algunas de las opciones del comando son:\
   > `namespace=nginx-ingress` Instala sobre el namespace nginx-ingress y lo crea si no existe
