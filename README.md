@@ -15,7 +15,8 @@ Se recomienda colocar la calidad de colores a lo minimo para un mejor desempeño
 
 :warning: Si hay problemas a la hora de realizar la conexión por RDP (Firewalls corportativos o lentitud en la conexión) se puede usar como alternativa [Guacamole](https://guacamole.apache.org/) que funciona como un proxy RDP via Web.
 
-Guacamole esta habilitado en las opciones de Acceso del servidor `ubuntu-desktop` y desde alli se puede acceder al escritorio Linux.
+Guacamole esta habilitado en el menu `ACCESS` del servidor `ubuntu-desktop`.
+
 ![Guacamole](docs/guacamole.png)
 | Usuario   | Password  |
 |-----------|-----------|

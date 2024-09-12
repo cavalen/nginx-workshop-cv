@@ -13,6 +13,14 @@ It is recommended to set the RDP "color quality" option to the minimum for bette
 |--------------------------------------|----------------------------------|
 | ![RDP Windows](docs/rdp-windows.png) | ![RDP Windows](docs/rdp-mac.png) |
 
+:warning: If there are problems when connecting via RDP (corporate firewalls or slow connection) you can use as an alternative [Guacamole](https://guacamole.apache.org/) which works as an RDP proxy via the Web.
+
+Guacamole is enabled in the `ACCESS` menu of the `ubuntu-desktop` server.
+
+![Guacamole](docs/guacamole.png)
+| Usuario   | Password  |
+|-----------|-----------|
+| guacamole | guacamole |
 
 ## Lab Descripcion:
 
