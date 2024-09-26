@@ -20,14 +20,14 @@ En la guía se utilizará `vim` para crear y modificar los archivos de configura
 > Remote Desktop y WebShell (UDF) pueden dar dificultades a la hora de Copiar/Pegar el texto de los archivos de configuración. 
 > 
 > Para crear/editar los archivos de configuración de NGINX usando vscode, hacer doble click al acceso `nginx.code-workspace` en el escritorio del jumphost y usar el password `HelloUDF`
-> 
+>
 > ![vscode](./vscode-workspace.png)
-> 
+>
 > ![vscode-root](./root-password.png)
 >
-> 
+>
 > Cuando se requiere reiniciar el servicio de NGINX se puede hacer desde la terminal de vscode.
-> 
+>
 > El resto de instrucciones suponen que se esta haciendo la edición de archivos via linea de comandos con `vim`.
 
 > [!NOTE]
@@ -778,7 +778,8 @@ Ahora procederemos a crear todos los archivos de configuración del WAF y activa
 ## 5. Auth con OpenID Connect (OIDC)
 NGINX Plus permite utilizar un Identity Provider (IdP) para autenticar usuarios antes de "proxearlos" hacia la aplicación o el backend.
 
-:warning: Esta integracion es un proceso manual, se hace con un componente adicional descargado desde [GitHub](https://github.com/nginxinc/nginx-openid-connect) y configurado de acuerdo con su entorno de OIDC. 
+> [!CAUTION]
+> Esta integracion es un proceso manual, se hace con un componente adicional descargado desde [GitHub](https://github.com/nginxinc/nginx-openid-connect) y debe ser configurado de acuerdo con su entorno de OIDC.
 
 ```mermaid
 flowchart BT

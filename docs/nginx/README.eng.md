@@ -784,7 +784,8 @@ Now, we will proceed to create all of the configuration files needed for the WAF
 ## 5. Auth using OpenID Connect (OIDC)
 NGINX Plus allows the integration with an Identity Provider (IdP) to authenticate users before "proxying" them to the application or backend.
 
-:warning: This integration us a manual process, it is done with an additional component that must be downloaded from [GitHub](https://github.com/nginxinc/nginx-openid-connect) and configured according to your OIDC environment. 
+> [!CAUTION]
+> This integration us a manual process, it is done with an additional component that must be downloaded from [GitHub](https://github.com/nginxinc/nginx-openid-connect) and configured according to your OIDC environment. 
 
 ```mermaid
 flowchart BT
@@ -890,7 +891,7 @@ Keycloak is pre-configured, and can be accesed at **https://keycloak.example.com
 
 - Download software from GitHub.\
   NOTE: there is a recommended branch for every NGINX Plus release. As an example: if you are using NGINX Plus R31 the git command to pull the repository should include the recommended branch (`git clone -b R31 <REPO>`)\
-  
+
   In this case, download the latest version.
   ```sh
   git clone https://github.com/nginxinc/nginx-openid-connect
@@ -1026,7 +1027,7 @@ Keycloak is pre-configured, and can be accesed at **https://keycloak.example.com
   The IdP administrator must provide the correct values and  debe conocer estos valores, Additionally, the `openid-configurations` URL from the IdP can help us with this validation:
 
   **http://keycloak.example.com/realms/master/.well-known/openid-configuration**
-  
+
   ![Keycloak3](./keycloak3.png)
 
   The values we need to configure are in the `map` directives:
