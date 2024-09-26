@@ -27,7 +27,7 @@
 > ![Webshell](./webshell.png)
 
 
-Abrir la consola del Jumphost y clonar el repositorio del Lab
+En el equipo `ubuntu-desktop` abrir la Terminal y clonar el repositorio del Lab:
 ```
 git clone https://github.com/cavalen/nginx-workshop-cv/
 ```

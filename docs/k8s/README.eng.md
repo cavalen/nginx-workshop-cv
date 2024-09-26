@@ -25,7 +25,7 @@
 > ![Webshell](./webshell.png)
 
 
-Inside the `ubuntu-desktop` open the console and clone the lab's repository
+Inside the `ubuntu-desktop` open the terminal and clone the lab's repository
 ```
 git clone https://github.com/cavalen/nginx-workshop-cv/
 ```
