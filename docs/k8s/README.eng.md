@@ -14,14 +14,14 @@
 ## 1. Prerequisites
 
 > [!NOTE]
-> :warning: **Note:** NGINX Ingress Controller instalation and configuration is done using the command line (CLI) with `helm`, `kubectl` and `YAML manifests` .
-> Linux CLI and Kubernetes experience is recommended.
+> 1. NGINX Ingress Controller instalation and configuration is done using the command line (CLI) with `helm`, `kubectl` and `YAML manifests` . Linux CLI and Kubernetes experience is recommended.\
+> Using the CLI there is an alias for `kubectl`. The instructions use the alias `k`.
 
-> :warning: **Note:** Using the CLI there is an alias for `kubectl`. The instructions use the alias `k`.
+> 2. All the steps from this guide are done in the machine `ubuntu-desktop` (RDP Server). There is no need to do SSH to another machine for this section of the Lab.
 
->  :warning: **IMPORTANT:** All the steps from this guide are done in the machine `ubuntu-desktop` (RDP Server). There is no need to do SSH to another machine for this section of the Lab.
-
+> [!IMPORTANT]
 > The Remote Desktop connection can cause difficulties when copying and pasting text from the guide. Try to follow the guide and running the CLI commands from the `ubuntu-desktop` RDP client or use the Webshell access to run the CLI commands and the RDP session to browse the applications.
+
 > ![Webshell](./webshell.png)
 
 
