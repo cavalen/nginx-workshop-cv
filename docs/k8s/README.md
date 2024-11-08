@@ -247,7 +247,7 @@ sed -i 's/\/usr\/share\/nginx\/html;/\/tmp;/g' /etc/nginx/nginx.conf
 nginx -s reload
 exit
 ```
-Ir a **https://brewz.example.com**\
+Ir a **https://brewz.example.com**
 La aplicación claramente esta respondiendo, pero no lo que esperamos.
 
 Adicionaremos un Health-check al Ingress para detectar este tipo de fallas, mas allá de un código de respuesta HTTP 500 del POD.\
