@@ -427,6 +427,14 @@ Volver a **https://brewz.example.com**
 
 Validar el mensaje de error, ahora modificado por el Ingress
 
+El Ingress de NGINX expone un endpoint para validar el estado de salud de un servicio, esta funcionalidad se llama ["Service Insight"](https://docs.nginx.com/nginx-ingress-controller/logging-and-monitoring/service-insight/) y la podemos probar en nuestro lab via `curl`
+
+```sh
+curl http://10.1.1.5:30914/probe/brewz.example.com
+```
+La respuesta del Ingress indica el numero total de pods y cuantos de ellos no están saludables
+`{"Total":7,"Up":7,"Unhealthy":0}`
+
 Por último, eliminar el POD "fallido"
 ```sh
 k delete pod $POD -n brewz
