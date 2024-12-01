@@ -228,7 +228,7 @@ Este comando nos pone en un shell en el pod `spa` de Brewz
 ```sh
 kubectl exec -it -n brewz $POD -- sh
 ```
-Editar Web Server:
+Editar Web Server: (Copiar y pegar en el shell del POD)
 ```sh
 cat <<EOF > /tmp/index.html
 <html>
@@ -241,7 +241,7 @@ cat <<EOF > /tmp/index.html
 </html>
 EOF
 ```
-Aplicar cambios y reiniciar el Web Server del POD:
+Aplicar cambios y reiniciar el Web Server del POD: (Copiar y pegar en el shell del POD)
 ```sh
 sed -i 's/\/usr\/share\/nginx\/html;/\/tmp;/g' /etc/nginx/nginx.conf
 nginx -s reload
