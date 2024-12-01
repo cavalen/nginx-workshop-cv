@@ -89,7 +89,8 @@ spec:
     spec:
       containers:
         - name: recommendations
-          image: ghcr.io/f5devcentral/spa-demo-app-recommendations:latest
+          # image: ghcr.io/f5devcentral/spa-demo-app-recommendations:latest  # 2024/Dec/01 --> latest not working
+          image: ghcr.io/f5devcentral/spa-demo-app-recommendations:sha-ff32646
           ports:
             - containerPort: 8001
 ---
