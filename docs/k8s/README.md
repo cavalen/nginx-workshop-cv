@@ -435,7 +435,7 @@ curl http://10.1.1.5:30914/probe/brewz.example.com
 La respuesta del Ingress indica el numero total de pods y cuantos de ellos no están saludables
 `{"Total":7,"Up":7,"Unhealthy":0}`
 
-Por último, eliminar el POD "fallido"
+Por último, eliminar el POD "fallido" y la aplicación BREWZ debe regresar a la normalidad (K8S levanta un nuevo por `spa` con la configuracion inicial)
 ```sh
 k delete pod $POD -n brewz
 ```
