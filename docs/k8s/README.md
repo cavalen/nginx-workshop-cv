@@ -222,7 +222,7 @@ Antes de hacer cambios al Ingress, simulamos un fallo en la aplicación (ej, res
 
 Para esto entramos por SSH al POD del frontend (spa) y editamos el web server:
 ```sh
-POD=$(kubectl get pod -n brewz -o custom-columns=:.metadata.name | grep spa | head -1); echo $POD
+POD=$(kubectl get pod -n brewz -o custom-columns=:.metadata.name | grep -v dark | grep spa | head -1); echo $POD
 ```
 Este comando nos pone en un shell en el pod `spa` de Brewz
 ```sh
