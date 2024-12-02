@@ -6,7 +6,7 @@
 [3. Instalar App BREWZ](#3-instalar-app-brewz)\
 [4. Publicar un Ingress (Virtual Server)](#4-publicar-un-ingress-virtual-server)\
 [5. HealtChecks Activos](#5-healtchecks-activos)\
-[6. Manejo de Errores](#6-manejo-de-errores--circuit-breaker)\
+[6. Manejo de Errores / Circuit Breaker](#6-manejo-de-errores--circuit-breaker)\
 [7. Web Application Firewall (WAF)](#7-web-application-firewall-waf)\
 [8. JWT Auth](#8-jwt-auth)\
 [9. Integración IdP con OIDC](#9-integración-idp-con-oidc)
