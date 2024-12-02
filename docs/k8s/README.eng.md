@@ -220,13 +220,13 @@ Before making changes to the Ingress, let's simulate an application failure (a 2
 
 To do this, open an SSH connection to the application frontend POD (spa) and edit the web server:
 ```sh
-POD=$(kubectl get pod -n brewz -o custom-columns=:.metadata.name | grep spa | head -1); echo $POD
+POD=$(kubectl get pod -n brewz -o custom-columns=:.metadata.name | grep -v dark | grep spa | head -1); echo $POD
 ```
 This command put us in a shell inside the `spa` pod.
 ```sh
 kubectl exec -it -n brewz $POD -- sh
 ```
-Edit the Web Server:
+Edit the Web Server: (Copy and Paste in the POD's shell)
 ```sh
 cat <<EOF > /tmp/index.html
 <html>
@@ -239,7 +239,7 @@ cat <<EOF > /tmp/index.html
 </html>
 EOF
 ```
-Apply changes and restart the Web Server inside the POD:
+Apply changes and restart the Web Server inside the POD: (Copy and Paste in the POD's shell)
 ```sh
 sed -i 's/\/usr\/share\/nginx\/html;/\/tmp;/g' /etc/nginx/nginx.conf
 nginx -s reload
@@ -340,7 +340,7 @@ The application is in a failed state. Since we edited the Application POD and th
 
 ![502 Error](./brewz-502.png)
 
-## 6. Error Management
+## 6. Error Management / Circuit Breaker
 
 In this scenario we want the Ingress to intercept this 502 error and not present it to the user, and instead respond with some content. This is achieved through a directive called `errorPages`
 
@@ -427,6 +427,13 @@ k apply -f 3-virtualserver-brewz.yaml -n brewz
 Go back to **https://brewz.example.com**
 
 Validate the error message, now modified by the Ingress
+
+NGINX Ingress expose an endpoint used to validate the service health state. This functionality is called ["Service Insight"](https://docs.nginx.com/nginx-ingress-controller/logging-and-monitoring/service-insight/) and we can test it via `curl`
+
+```sh
+curl http://10.1.1.5:30914/probe/brewz.example.com
+```
+The Ingress' response indicates the number of PODS and how many are unhealthy --> `{"Total":7,"Up":7,"Unhealthy":0}`
 
 :warning: Finally, delete the "failed" POD
 ```sh
