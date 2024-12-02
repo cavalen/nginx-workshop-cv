@@ -6,7 +6,7 @@
 [3. BREWZ App Installation](#3-brewz-app-installation)\
 [4. Publish an Ingress (Virtual Server)](#4-publish-an-ingress-virtual-server)\
 [5. Active Healt Checks](#5-active-healt-checks)\
-[6. Error Management / Circuit Breaker](#6-error-management--circuit-breaker)\
+[6. Error Handling / Circuit Breaker](#6-error-handling--circuit-breaker)\
 [7. Web Application Firewall (WAF)](#7-web-application-firewall-waf)\
 [8. JWT Auth](#8-jwt-auth)\
 [9. Auth using OpenID Connect (OIDC)](#9-auth-using-openid-connect-oidc)
@@ -340,7 +340,7 @@ The application is in a failed state. Since we edited the Application POD and th
 
 ![502 Error](./brewz-502.png)
 
-## 6. Error Management / Circuit Breaker
+## 6. Error Handling / Circuit Breaker
 
 In this scenario we want the Ingress to intercept this 502 error and not present it to the user, and instead respond with some content. This is achieved through a directive called `errorPages`
 
