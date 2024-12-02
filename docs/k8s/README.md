@@ -340,7 +340,7 @@ Como editamos el POD del Aplicativo y el Health Check busca la cadena "Brewz" y 
 
 ![502 Error](./brewz-502.png)
 
-## 6. Manejo de Errores
+## 6. Manejo de Errores / Circuit Breaker
 
 En este escenario buscamos que el Ingress intercepte este error 502 y no lo presente al usuario, sino que responda con algún contenido. Esto se logra por medio de una directiva llamada `errorPages`
 
@@ -432,10 +432,9 @@ El Ingress de NGINX expone un endpoint para validar el estado de salud de un ser
 ```sh
 curl http://10.1.1.5:30914/probe/brewz.example.com
 ```
-La respuesta del Ingress indica el numero total de pods y cuantos de ellos no están saludables
-`{"Total":7,"Up":7,"Unhealthy":0}`
+La respuesta del Ingress indica el numero total de pods y cuantos de ellos no están saludables --> `{"Total":7,"Up":7,"Unhealthy":0}`
 
-Por último, eliminar el POD "fallido" y la aplicación BREWZ debe regresar a la normalidad (K8S crea un nuevo POD `spa` con la configuracion inicial)
+:warning: Por último, eliminar el POD "fallido" y la aplicación BREWZ debe regresar a la normalidad (K8S crea un nuevo POD `spa` con la configuracion inicial)
 ```sh
 k delete pod $POD -n brewz
 ```
