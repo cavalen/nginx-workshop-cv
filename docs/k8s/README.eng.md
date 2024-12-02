@@ -6,7 +6,7 @@
 [3. BREWZ App Installation](#3-brewz-app-installation)\
 [4. Publish an Ingress (Virtual Server)](#4-publish-an-ingress-virtual-server)\
 [5. Active Healt Checks](#5-active-healt-checks)\
-[6. Error Management](#6-error-management)\
+[6. Error Management](#6-error-management--circuit-breaker)\
 [7. Web Application Firewall (WAF)](#7-web-application-firewall-waf)\
 [8. JWT Auth](#8-jwt-auth)\
 [9. Auth using OpenID Connect (OIDC)](#9-auth-using-openid-connect-oidc)
