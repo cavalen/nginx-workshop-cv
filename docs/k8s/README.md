@@ -71,6 +71,9 @@ EOF
 
 > :bangbang: Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0`
 
+<details>
+<summary>Helm version 1.4.2 (Ingress v3.x)</summary>
+
 ```sh
 helm install nginx-ingress nginx-stable/nginx-ingress \
   --version=1.4.2 \
@@ -78,7 +81,7 @@ helm install nginx-ingress nginx-stable/nginx-ingress \
   --create-namespace \
   --set controller.kind=deployment \
   --set controller.replicaCount=1 \
-  --set controller.image.repository=registry/repo \
+  --set controller.image.repository=cavalen/nginx-ingress \
   --set controller.image.tag=3.5.0 \
   --set controller.image.pullPolicy=IfNotPresent \
   --set controller.nginxplus=true \
@@ -110,6 +113,51 @@ helm install nginx-ingress nginx-stable/nginx-ingress \
   --set "controller.service.customPorts[0].targetPort"=9114 \
   --set "controller.service.customPorts[0].protocol"=TCP
 ```
+</details>
+
+<details>
+<summary>Helm latest version (Ingress v4.x)</summary>
+
+```sh
+helm install nginx-ingress nginx-stable/nginx-ingress \
+  --namespace=nginx-ingress \
+  --create-namespace \
+  --set controller.kind=deployment \
+  --set controller.replicaCount=1 \
+  --set controller.image.repository=cavalen/nginx-ingress \
+  --set controller.image.tag=3.5.0 \
+  --set controller.image.pullPolicy=IfNotPresent \
+  --set controller.nginxplus=true \
+  --set controller.appprotect.enable=true \
+  --set controller.appprotectdos.enable=false \
+  --set controller.ingressClass.create=true \
+  --set controller.ingressClass.name="nginx-ingress" \
+  --set controller.enableCustomResources=true \
+  --set controller.enableSnippets=true \
+  --set controller.enableTLSPassthrough=true \
+  --set controller.enableOIDC=true \
+  --set controller.healthStatus=true \
+  --set controller.nginxStatus.enable=true \
+  --set controller.nginxStatus.port=8080 \
+  --set controller.nginxStatus.allowCidrs="0.0.0.0/0" \
+  --set controller.service.name="nginx-ingress" \
+  --set controller.service.type=LoadBalancer \
+  --set controller.enableLatencyMetrics=true \
+  --set prometheus.create=true \
+  --set prometheus.port=9113 \
+  --set serviceInsight.create=true \
+  --set serviceInsight.port=9114 \
+  --set controller.config.entries."resolver-addresses"="$DNSSVC" \
+  --set controller.config.entries."resolver-valid"="5s" \
+  --set controller.config.entries."stream-snippets=$CONFIGMAP_DATA" \
+  --set "controller.service.customPorts[0].name"=insight \
+  --set "controller.service.customPorts[0].nodePort"=30914 \
+  --set "controller.service.customPorts[0].port"=9114 \
+  --set "controller.service.customPorts[0].targetPort"=9114 \
+  --set "controller.service.customPorts[0].protocol"=TCP
+```
+</details>
+
 Este comando despliega un ingress llamado `nginx-ingress`\
 >> :warning: NOTA: Si a la hora de desplegar el Ingress se presenta un error, es necesario "desinstalar" el despliegue fallido antes de intentarlo nuevamente, con el comando `helm uninstall nginx-ingress -n nginx-ingress`
 
