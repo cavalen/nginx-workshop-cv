@@ -1,5 +1,8 @@
 # Instrucciones Lab NGINX Ingress Controller
 
+NOTA: funciona con Ingress v3.x, aun no con 4.x\
+Helm chart recomendado es CHART VERSION = 1.4.2 / APP VERSION = 3.7.2\
+
 ## Contenido:
 [1. Pre-requisitos](#1-pre-requisitos)\
 [2. Instalación K8s Ingress via Helm](#2-instalación-k8s-ingress-via-helm)\
