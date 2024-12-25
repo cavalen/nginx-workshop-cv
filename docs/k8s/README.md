@@ -73,6 +73,7 @@ EOF
 
 ```sh
 helm install nginx-ingress nginx-stable/nginx-ingress \
+  --version=1.4.2 \
   --namespace=nginx-ingress \
   --create-namespace \
   --set controller.kind=deployment \
