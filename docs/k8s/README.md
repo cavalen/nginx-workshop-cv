@@ -67,10 +67,10 @@ EOF
 )
 ```
 
+**Usar una de las dos opciones:**
 > :bangbang: Editar el valor de `controller.image.repository` por uno válido, ej. `controller.image.repository=myregistry/nginx-plus-ingress`
 
 > :bangbang: Editar el valor de `controller.image.tag` por uno valido, ej. `controller.image.tag=3.5.0`
-
 <details>
 <summary>Helm version 1.4.2 (Ingress v3.x)</summary>
 
