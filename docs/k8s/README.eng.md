@@ -36,6 +36,8 @@ cd nginx-workshop-cv/k8s
 
 ## 2. K8s Ingress Installation via Helm
 
+Helm uses a YAML file (`values.yaml`) for configuration, we will be using a different approach passing all the options as flags instead of editing the values.yaml file.
+
 #### Install Helm:
 ```
 helm repo add nginx-stable https://helm.nginx.com/stable
@@ -45,8 +47,6 @@ helm repo update
 ```
 
 #### Install NGINX Ingress Controller via Helm:
-
-Note: Helm uses a YAML file (`values.yaml`) for configuration, we will be using a different approach passing all the options as flags instead of editing the values.yaml file.
 
 We need to create a ConfigMap with the DNS Resolver and some other specific configurations needed for the OIDC integration in environments with more than one Ingress Controller replicas.
 
