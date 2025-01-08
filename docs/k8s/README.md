@@ -41,7 +41,7 @@ cd nginx-workshop-cv/k8s
 
 ## 2. Instalación K8s Ingress via Helm
 
-Helm usa un archivo YAML (values.yaml) para la configuracion, acá usaremos un metodo distinto pasando todas las opciones como "flags" al comando helm en lugar de usar el archivo values.yaml
+Helm usa un archivo YAML (`values.yaml`) para la configuracion, acá usaremos un metodo distinto pasando todas las opciones como "flags" al comando helm en lugar de usar el archivo values.yaml
 
 #### Instalar Helm:
 ```
