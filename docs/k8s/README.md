@@ -51,6 +51,8 @@ helm repo update
 
 #### Instalar NGINX Ingress Controller via Helm:
 
+Helm usa un archivo YAML (values.yaml) para la configuracion, acá usaremos un metodo distinto pasando todas las opciones como "flags" al comando helm en lugar de usar el archivo values.yaml
+
 Es necesario crear un ConfigMap donde se especifique el resolver de DNS y unas configuraciones adicionales necesarias para OIDC en entornos donde hay mas de una replica del Ingress Controller.
 
 ```
